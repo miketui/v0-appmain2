@@ -92,3 +92,7 @@ export class AuthService {
 }
 
 export const authService = new AuthService()
+
+export const signInWithEmail = (email: string, password: string) => authService.signIn(email, password)
+export const getCurrentUser = () => authService.getCurrentUser()
+export const signOut = () => authService.signOut()
