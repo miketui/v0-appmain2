@@ -9,6 +9,11 @@ export interface User {
     display_name?: string
     avatar_url?: string
     house_id?: string
+    house_name?: string
+    bio?: string
+    pronouns?: string
+    ballroom_experience?: string
+    social_links?: any
   }
 }
 
@@ -25,6 +30,18 @@ export class AuthService {
       apiClient.setToken(data.session.access_token)
     }
 
+    return data
+  }
+
+  async signInWithMagicLink(email: string) {
+    const { data, error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`
+      }
+    })
+
+    if (error) throw error
     return data
   }
 
@@ -55,14 +72,30 @@ export class AuthService {
 
     if (!user) return null
 
-    // Get additional profile data
-    const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+    // Get additional profile data from user_profiles table
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select(`
+        *,
+        house:houses(name, id)
+      `)
+      .eq("id", user.id)
+      .single()
 
     return {
       id: user.id,
       email: user.email!,
-      role: profile?.role || "applicant",
-      profile: profile || undefined,
+      role: profile?.role?.toLowerCase() || "applicant",
+      profile: profile ? {
+        display_name: profile.display_name,
+        avatar_url: profile.avatar_url,
+        house_id: profile.house_id,
+        house_name: profile.house?.name,
+        bio: profile.bio,
+        pronouns: profile.pronouns,
+        ballroom_experience: profile.ballroom_experience,
+        social_links: profile.social_links,
+      } : undefined,
     }
   }
 
@@ -72,7 +105,18 @@ export class AuthService {
     } = await supabase.auth.getUser()
     if (!user) throw new Error("Not authenticated")
 
-    const { data, error } = await supabase.from("profiles").update(updates).eq("id", user.id).select().single()
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", user.id)
+      .select(`
+        *,
+        house:houses(name, id)
+      `)
+      .single()
 
     if (error) throw error
     return data
@@ -94,5 +138,6 @@ export class AuthService {
 export const authService = new AuthService()
 
 export const signInWithEmail = (email: string, password: string) => authService.signIn(email, password)
+export const signInWithMagicLink = (email: string) => authService.signInWithMagicLink(email)
 export const getCurrentUser = () => authService.getCurrentUser()
 export const signOut = () => authService.signOut()

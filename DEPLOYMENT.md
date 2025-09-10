@@ -1,13 +1,24 @@
-# 🚀 Haus of Basquiat - Deployment Guide
+# 🚀 Haus of Basquiat Portal - Production Deployment Guide
 
-This guide will help you deploy the complete Haus of Basquiat application to production.
+This guide will help you deploy the complete Haus of Basquiat Portal (Next.js + Supabase) to production.
 
 ## 📋 Prerequisites
 
 - Node.js 18+ and npm
 - Supabase account and project
-- Railway account (or alternative hosting platform)
+- Vercel account (recommended) or Railway/Netlify
+- Git repository (GitHub, GitLab, or Bitbucket)
 - Domain name (optional, for custom domain)
+
+## ⚡ Quick Start (5-minute deployment)
+
+1. **Copy environment template**: `cp .env.example .env.local`
+2. **Set up Supabase database**: Run `database/schema.sql` in Supabase SQL Editor
+3. **Deploy to Vercel**: Push to GitHub and import to Vercel
+4. **Add environment variables** in Vercel dashboard
+5. **Test deployment**: Visit your live URL
+
+Detailed steps below ⬇️
 
 ## 🗄️ Database Setup (Supabase)
 
