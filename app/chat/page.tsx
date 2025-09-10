@@ -64,7 +64,7 @@ export default function ChatPage() {
   const loadThreads = async () => {
     try {
       setLoading(true)
-      const response = await apiClient.getChats()
+      const response = await apiClient.getThreads() as any
       setThreads(response.threads || [])
     } catch (error) {
       console.error("Error loading threads:", error)

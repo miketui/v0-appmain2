@@ -15,7 +15,7 @@ import { apiClient } from "@/lib/api"
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState(null)
+  const [stats, setStats] = useState<any>(null)
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
     try {
       setLoading(true)
       // Load admin statistics
-      const response = await apiClient.getUsers(1, 1) // Just to test API
+      const response = await apiClient.getUsers("", []) // Just to test API
       // Mock stats for now
       setStats({
         totalUsers: 1247,

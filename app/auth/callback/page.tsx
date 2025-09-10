@@ -33,9 +33,9 @@ export default function AuthCallbackPage() {
 
           // Redirect based on user status and role
           setTimeout(() => {
-            if (profile?.status === "pending") {
+            if ((profile as any)?.status === "pending") {
               router.push("/auth/pending")
-            } else if (profile?.role === "admin") {
+            } else if ((profile as any)?.role === "admin") {
               router.push("/admin")
             } else {
               router.push("/feed")

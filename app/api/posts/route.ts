@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       ...post,
       likes_count: post.post_likes?.length || 0,
       comments_count: post.comments?.length || 0,
-      user_liked: post.post_likes?.some((like) => like.user_id === user.id) || false,
+      user_liked: post.post_likes?.some((like: any) => like.user_id === user.id) || false,
     }))
 
     return NextResponse.json({ posts: formattedPosts })
