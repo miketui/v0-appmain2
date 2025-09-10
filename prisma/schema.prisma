@@ -1,0 +1,448 @@
+// Prisma schema for Haus of Basquiat Portal
+// Matches Supabase database structure exactly
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// =====================================================
+// ENUMS (matching Supabase types)
+// =====================================================
+
+enum UserRole {
+  Applicant
+  Member
+  Leader
+  Admin
+}
+
+enum UserStatus {
+  pending
+  active
+  banned
+}
+
+enum ApplicationStatus {
+  pending
+  approved
+  rejected
+}
+
+enum ModerationStatus {
+  pending
+  approved
+  flagged
+}
+
+enum ThreadType {
+  direct
+  group
+}
+
+enum MessageType {
+  text
+  image
+  file
+}
+
+enum PostVisibility {
+  public
+  house_only
+  members_only
+}
+
+enum NotificationType {
+  like
+  comment
+  message
+  application
+  system
+}
+
+enum EventStatus {
+  draft
+  published
+  cancelled
+  completed
+}
+
+enum RsvpStatus {
+  attending
+  not_attending
+  maybe
+}
+
+// =====================================================
+// CORE MODELS
+// =====================================================
+
+model House {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  category    String
+  description String?
+  leaderId    String?  @map("leader_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  leader       UserProfile?  @relation("HouseLeader", fields: [leaderId], references: [id])
+  members      UserProfile[] @relation("HouseMembers")
+  posts        Post[]
+  galleryItems GalleryItem[]
+  events       Event[]
+
+  @@map("houses")
+}
+
+model UserProfile {
+  id                 String     @id @db.Uuid
+  email              String     @unique
+  role               UserRole   @default(Applicant)
+  houseId            String?    @map("house_id") @db.Uuid
+  status             UserStatus @default(pending)
+  displayName        String?    @map("display_name")
+  bio                String?
+  avatarUrl          String?    @map("avatar_url")
+  phone              String?
+  dateOfBirth        DateTime?  @map("date_of_birth") @db.Date
+  pronouns           String?
+  ballroomExperience String?    @map("ballroom_experience")
+  socialLinks        Json       @default("{}") @map("social_links")
+  profileData        Json       @default("{}") @map("profile_data")
+  loginCode          String?    @unique @map("login_code")
+  lastActiveAt       DateTime   @default(now()) @map("last_active_at") @db.Timestamptz(6)
+  createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  house                  House?              @relation("HouseMembers", fields: [houseId], references: [id])
+  ledHouses              House[]             @relation("HouseLeader")
+  applications           UserApplication[]
+  posts                  Post[]
+  comments               Comment[]
+  postLikes              PostLike[]
+  commentLikes           CommentLike[]
+  galleryItems           GalleryItem[]
+  galleryLikes           GalleryLike[]
+  documents              Document[]
+  documentDownloads      DocumentDownload[]
+  sentMessages           Message[]
+  notifications          Notification[]
+  subscriptions          Subscription[]
+  createdEvents          Event[]
+  eventRsvps             EventRsvp[]
+  reviewedApplications   UserApplication[]   @relation("ApplicationReviewer")
+
+  @@map("user_profiles")
+}
+
+model UserApplication {
+  id            String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String            @map("user_id") @db.Uuid
+  applicantData Json              @map("applicant_data")
+  status        ApplicationStatus @default(pending)
+  reviewNotes   String?           @map("review_notes")
+  submittedAt   DateTime          @default(now()) @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt    DateTime?         @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy    String?           @map("reviewed_by") @db.Uuid
+
+  // Relations
+  user     UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewer UserProfile? @relation("ApplicationReviewer", fields: [reviewedBy], references: [id])
+
+  @@map("user_applications")
+}
+
+model Event {
+  id                   String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title                String
+  description          String?
+  eventType            String      @map("event_type") // 'battle', 'workshop', 'social', 'meeting'
+  location             String?
+  virtualLink          String?     @map("virtual_link")
+  startTime            DateTime    @map("start_time") @db.Timestamptz(6)
+  endTime              DateTime    @map("end_time") @db.Timestamptz(6)
+  maxAttendees         Int?        @map("max_attendees")
+  registrationRequired Boolean     @default(false) @map("registration_required")
+  status               EventStatus @default(draft)
+  houseId              String?     @map("house_id") @db.Uuid
+  createdBy            String?     @map("created_by") @db.Uuid
+  eventData            Json        @default("{}") @map("event_data")
+  createdAt            DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  house   House?      @relation(fields: [houseId], references: [id])
+  creator UserProfile? @relation(fields: [createdBy], references: [id])
+  rsvps   EventRsvp[]
+
+  @@map("events")
+}
+
+model EventRsvp {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId   String     @map("event_id") @db.Uuid
+  userId    String     @map("user_id") @db.Uuid
+  status    RsvpStatus
+  notes     String?
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  event Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@map("event_rsvps")
+}
+
+model GalleryItem {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title            String?
+  description      String?
+  category         String // 'performance', 'fashion', 'runway', 'portrait'
+  mediaType        String            @map("media_type") // 'image', 'video'
+  mediaUrl         String            @map("media_url")
+  thumbnailUrl     String?           @map("thumbnail_url")
+  uploaderId       String            @map("uploader_id") @db.Uuid
+  houseId          String?           @map("house_id") @db.Uuid
+  tags             String[]
+  likesCount       Int               @default(0) @map("likes_count")
+  viewsCount       Int               @default(0) @map("views_count")
+  moderationStatus ModerationStatus  @default(pending) @map("moderation_status")
+  featured         Boolean           @default(false)
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  uploader UserProfile   @relation(fields: [uploaderId], references: [id])
+  house    House?        @relation(fields: [houseId], references: [id])
+  likes    GalleryLike[]
+
+  @@map("gallery_items")
+}
+
+model GalleryLike {
+  galleryItemId String   @map("gallery_item_id") @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  galleryItem GalleryItem @relation(fields: [galleryItemId], references: [id], onDelete: Cascade)
+  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([galleryItemId, userId])
+  @@map("gallery_likes")
+}
+
+model Document {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title            String
+  category         String
+  fileUrl          String            @map("file_url")
+  fileType         String            @map("file_type")
+  fileSize         BigInt?           @map("file_size")
+  uploaderId       String            @map("uploader_id") @db.Uuid
+  accessLevel      UserRole          @default(Member) @map("access_level")
+  downloadCount    Int               @default(0) @map("download_count")
+  moderationStatus ModerationStatus  @default(pending) @map("moderation_status")
+  tags             String[]
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  uploader  UserProfile        @relation(fields: [uploaderId], references: [id])
+  downloads DocumentDownload[]
+
+  @@map("documents")
+}
+
+model DocumentDownload {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  documentId   String   @map("document_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  downloadedAt DateTime @default(now()) @map("downloaded_at") @db.Timestamptz(6)
+
+  // Relations
+  document Document    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user     UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("document_downloads")
+}
+
+model ChatThread {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String?
+  threadType      ThreadType  @map("thread_type")
+  participants    String[]    @db.Uuid
+  createdBy       String?     @map("created_by") @db.Uuid
+  lastMessageAt   DateTime    @default(now()) @map("last_message_at") @db.Timestamptz(6)
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  messages     Message[]
+  messageReads MessageRead[]
+
+  @@map("chat_threads")
+}
+
+model Message {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  threadId    String      @map("thread_id") @db.Uuid
+  senderId    String      @map("sender_id") @db.Uuid
+  content     String?
+  messageType MessageType @default(text) @map("message_type")
+  fileUrl     String?     @map("file_url")
+  replyTo     String?     @map("reply_to") @db.Uuid
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  thread      ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender      UserProfile @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  replyToMsg  Message?   @relation("MessageReply", fields: [replyTo], references: [id])
+  replies     Message[]  @relation("MessageReply")
+
+  @@map("messages")
+}
+
+model MessageRead {
+  userId     String   @map("user_id") @db.Uuid
+  threadId   String   @map("thread_id") @db.Uuid
+  lastReadAt DateTime @default(now()) @map("last_read_at") @db.Timestamptz(6)
+
+  // Relations
+  thread ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@id([userId, threadId])
+  @@map("message_reads")
+}
+
+model Post {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authorId         String            @map("author_id") @db.Uuid
+  content          String?
+  mediaUrls        String[]          @map("media_urls")
+  aiCaption        String?           @map("ai_caption")
+  moderationStatus ModerationStatus  @default(pending) @map("moderation_status")
+  likesCount       Int               @default(0) @map("likes_count")
+  commentsCount    Int               @default(0) @map("comments_count")
+  houseId          String?           @map("house_id") @db.Uuid
+  visibility       PostVisibility    @default(public)
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  author   UserProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  house    House?      @relation(fields: [houseId], references: [id])
+  likes    PostLike[]
+  comments Comment[]
+
+  @@map("posts")
+}
+
+model PostLike {
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  post Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId])
+  @@map("post_likes")
+}
+
+model Comment {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId      String   @map("post_id") @db.Uuid
+  authorId    String   @map("author_id") @db.Uuid
+  content     String
+  replyTo     String?  @map("reply_to") @db.Uuid
+  likesCount  Int      @default(0) @map("likes_count")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  post         Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author       UserProfile   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replyToComment Comment?    @relation("CommentReply", fields: [replyTo], references: [id])
+  replies      Comment[]     @relation("CommentReply")
+  likes        CommentLike[]
+
+  @@map("comments")
+}
+
+model CommentLike {
+  commentId String   @map("comment_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  comment Comment     @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([commentId, userId])
+  @@map("comment_likes")
+}
+
+model Notification {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  type      NotificationType
+  title     String
+  content   String?
+  relatedId String?          @map("related_id") @db.Uuid
+  readAt    DateTime?        @map("read_at") @db.Timestamptz(6)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Subscription {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String   @map("user_id") @db.Uuid
+  stripeSubscriptionId  String?  @unique @map("stripe_subscription_id")
+  stripeCustomerId      String?  @map("stripe_customer_id")
+  status                String
+  priceId               String   @map("price_id")
+  currentPeriodStart    DateTime? @map("current_period_start") @db.Timestamptz(6)
+  currentPeriodEnd      DateTime? @map("current_period_end") @db.Timestamptz(6)
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// =====================================================
+// WEBHOOK LOGGING (Optional)
+// =====================================================
+
+model WebhookLog {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventType    String    @map("event_type")
+  tableName    String    @map("table_name")
+  recordId     String?   @map("record_id") @db.Uuid
+  payload      Json?
+  deliveredAt  DateTime? @map("delivered_at") @db.Timestamptz(6)
+  status       String? // 'pending', 'delivered', 'failed'
+  errorMessage String?   @map("error_message")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("webhook_logs")
+}
