@@ -59,11 +59,14 @@ export function AuthProvider({ children }) {
     initializing,
     login,
     signOut,
-    // These will be properly implemented later
-    hasRole: (roles) => true,
-    isAdmin: () => true,
-    isLeaderOrAdmin: () => true,
-    isMemberOrAbove: () => true,
+    // Proper role-based permission functions
+    hasRole: (roles) => {
+      if (!userProfile) return false;
+      return Array.isArray(roles) ? roles.includes(userProfile.role) : userProfile.role === roles;
+    },
+    isAdmin: () => userProfile?.role === 'Admin',
+    isLeaderOrAdmin: () => ['Leader', 'Admin'].includes(userProfile?.role),
+    isMemberOrAbove: () => ['Member', 'Leader', 'Admin'].includes(userProfile?.role),
   };
 
   return (

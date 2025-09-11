@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Pages
 import LoginPage from './pages/LoginPage';
+import ApplicationPage from './pages/ApplicationPage';
 import FeedPage from './pages/FeedPage';
 import DocsPage from './pages/DocsPage';
 import ChatPage from './pages/ChatPage';
@@ -77,6 +78,16 @@ function AppRoutes() {
         }
       />
       <Route path="/auth/callback" element={<AuthCallback />} />
+      
+      {/* Application route for new members */}
+      <Route
+        path="/apply"
+        element={
+          <PrivateRoute roles={['Applicant']}>
+            <ApplicationPage />
+          </PrivateRoute>
+        }
+      />
 
       {/* Protected routes */}
       <Route
