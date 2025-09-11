@@ -1,8 +1,162 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { MessageCircle, Heart, Reply, MoreHorizontal, Flag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import UserAvatar from './UserAvatar';
 import Modal from './Modal';
+
+// Optimized sub-components
+const CommentActions = memo(({ 
+  comment, 
+  isReply, 
+  parentId, 
+  onLike, 
+  onReply, 
+  onReport 
+}) => (
+  <div className="flex items-center space-x-4 mt-2 ml-3">
+    <button
+      onClick={() => onLike(comment.id, isReply, parentId)}
+      className={`flex items-center space-x-1 text-xs transition-colors ${
+        comment.user_liked 
+          ? 'text-red-600 hover:text-red-700' 
+          : 'text-gray-500 hover:text-red-600'
+      }`}
+    >
+      <Heart 
+        className={`w-4 h-4 ${comment.user_liked ? 'fill-current' : ''}`} 
+      />
+      <span>{comment.likes_count}</span>
+    </button>
+
+    {!isReply && (
+      <button
+        onClick={() => onReply(comment.id)}
+        className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+      >
+        <Reply className="w-4 h-4" />
+        <span>Reply</span>
+      </button>
+    )}
+
+    <button
+      onClick={() => onReport(comment.id)}
+      className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+    >
+      <Flag className="w-4 h-4" />
+      <span>Report</span>
+    </button>
+  </div>
+));
+
+const CommentContent = memo(({ comment }) => (
+  <div className="bg-gray-50 rounded-lg px-3 py-2">
+    <div className="flex items-center space-x-2 mb-1">
+      <span className="text-sm font-medium text-gray-900">
+        {comment.author.display_name}
+      </span>
+      {comment.author.house && (
+        <span className="text-xs text-gray-500">
+          • {comment.author.house.name}
+        </span>
+      )}
+      <span className="text-xs text-gray-500">
+        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+      </span>
+    </div>
+    <p className="text-sm text-gray-900 whitespace-pre-wrap">
+      {comment.content}
+    </p>
+  </div>
+));
+
+const SingleComment = memo(({ 
+  comment, 
+  isReply = false, 
+  parentId = null,
+  currentUser,
+  replyingTo,
+  replyText,
+  onLike,
+  onReply,
+  onReport,
+  onAddReply,
+  onCancelReply,
+  onReplyTextChange
+}) => (
+  <div className={`${isReply ? 'ml-8 mt-3' : 'mb-4'}`}>
+    <div className="flex items-start space-x-3">
+      <UserAvatar 
+        user={comment.author} 
+        size="sm" 
+        showHouseIndicator={true}
+      />
+
+      <div className="flex-1 min-w-0">
+        <CommentContent comment={comment} />
+        
+        <CommentActions
+          comment={comment}
+          isReply={isReply}
+          parentId={parentId}
+          onLike={onLike}
+          onReply={onReply}
+          onReport={onReport}
+        />
+
+        {/* Reply input */}
+        {replyingTo === comment.id && (
+          <div className="mt-3 ml-3">
+            <div className="flex items-start space-x-2">
+              <UserAvatar user={currentUser} size="xs" />
+              <div className="flex-1">
+                <textarea
+                  value={replyText}
+                  onChange={onReplyTextChange}
+                  placeholder={`Reply to ${comment.author.display_name}...`}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  rows={2}
+                  autoFocus
+                />
+                <div className="flex items-center space-x-2 mt-2">
+                  <button
+                    onClick={() => onAddReply(replyText, comment.id)}
+                    disabled={!replyText.trim()}
+                    className="px-3 py-1 bg-purple-600 text-white text-xs rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Reply
+                  </button>
+                  <button
+                    onClick={onCancelReply}
+                    className="px-3 py-1 text-xs text-gray-600 hover:text-gray-800"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Replies */}
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="mt-3">
+            {comment.replies.map(reply => (
+              <SingleComment
+                key={reply.id}
+                comment={reply}
+                isReply={true}
+                parentId={comment.id}
+                currentUser={currentUser}
+                onLike={onLike}
+                onReport={onReport}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+));
 
 const CommentSection = ({ 
   postId, 
@@ -175,130 +329,52 @@ const CommentSection = ({
     }
   };
 
-  const formatTime = (timestamp) => {
-    return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
-  };
+  // Optimized handlers
+  const handleLikeComment = useCallback((commentId, isReply = false, parentId = null) => {
+    likeComment(commentId, isReply, parentId);
+  }, []);
 
-  const renderComment = (comment, isReply = false, parentId = null) => {
-    return (
-      <div key={comment.id} className={`${isReply ? 'ml-8 mt-3' : 'mb-4'}`}>
-        <div className="flex items-start space-x-3">
-          {/* Avatar */}
-          <UserAvatar 
-            user={comment.author} 
-            size="sm" 
-            showHouseIndicator={true}
-          />
+  const handleReplyToComment = useCallback((commentId) => {
+    setReplyingTo(commentId);
+  }, []);
 
-          {/* Comment content */}
-          <div className="flex-1 min-w-0">
-            <div className="bg-gray-50 rounded-lg px-3 py-2">
-              <div className="flex items-center space-x-2 mb-1">
-                <span className="text-sm font-medium text-gray-900">
-                  {comment.author.display_name}
-                </span>
-                {comment.author.house && (
-                  <span className="text-xs text-gray-500">
-                    • {comment.author.house.name}
-                  </span>
-                )}
-                <span className="text-xs text-gray-500">
-                  {formatTime(comment.created_at)}
-                </span>
-              </div>
-              <p className="text-sm text-gray-900 whitespace-pre-wrap">
-                {comment.content}
-              </p>
-            </div>
+  const handleReportComment = useCallback((commentId) => {
+    setReportingComment(commentId);
+    setShowReportModal(true);
+  }, []);
 
-            {/* Comment actions */}
-            <div className="flex items-center space-x-4 mt-2 ml-3">
-              <button
-                onClick={() => likeComment(comment.id, isReply, parentId)}
-                className={`flex items-center space-x-1 text-xs transition-colors ${
-                  comment.user_liked 
-                    ? 'text-red-600 hover:text-red-700' 
-                    : 'text-gray-500 hover:text-red-600'
-                }`}
-              >
-                <Heart 
-                  className={`w-4 h-4 ${comment.user_liked ? 'fill-current' : ''}`} 
-                />
-                <span>{comment.likes_count}</span>
-              </button>
+  const handleAddReply = useCallback((content, parentId) => {
+    addComment(content, parentId);
+  }, []);
 
-              {!isReply && (
-                <button
-                  onClick={() => setReplyingTo(comment.id)}
-                  className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  <Reply className="w-4 h-4" />
-                  <span>Reply</span>
-                </button>
-              )}
+  const handleCancelReply = useCallback(() => {
+    setReplyingTo(null);
+    setReplyText('');
+  }, []);
 
-              <button
-                onClick={() => {
-                  setReportingComment(comment.id);
-                  setShowReportModal(true);
-                }}
-                className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <Flag className="w-4 h-4" />
-                <span>Report</span>
-              </button>
-            </div>
+  const handleReplyTextChange = useCallback((e) => {
+    setReplyText(e.target.value);
+  }, []);
 
-            {/* Reply input */}
-            {replyingTo === comment.id && (
-              <div className="mt-3 ml-3">
-                <div className="flex items-start space-x-2">
-                  <UserAvatar user={currentUser} size="xs" />
-                  <div className="flex-1">
-                    <textarea
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      placeholder={`Reply to ${comment.author.display_name}...`}
-                      className="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                      rows={2}
-                      autoFocus
-                    />
-                    <div className="flex items-center space-x-2 mt-2">
-                      <button
-                        onClick={() => addComment(replyText, comment.id)}
-                        disabled={!replyText.trim()}
-                        className="px-3 py-1 bg-purple-600 text-white text-xs rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Reply
-                      </button>
-                      <button
-                        onClick={() => {
-                          setReplyingTo(null);
-                          setReplyText('');
-                        }}
-                        className="px-3 py-1 text-xs text-gray-600 hover:text-gray-800"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+  // Memoized comment list
+  const renderedComments = useMemo(() => {
+    return comments.map(comment => (
+      <SingleComment
+        key={comment.id}
+        comment={comment}
+        currentUser={currentUser}
+        replyingTo={replyingTo}
+        replyText={replyText}
+        onLike={handleLikeComment}
+        onReply={handleReplyToComment}
+        onReport={handleReportComment}
+        onAddReply={handleAddReply}
+        onCancelReply={handleCancelReply}
+        onReplyTextChange={handleReplyTextChange}
+      />
+    ));
+  }, [comments, currentUser, replyingTo, replyText, handleLikeComment, handleReplyToComment, handleReportComment, handleAddReply, handleCancelReply, handleReplyTextChange]);
 
-            {/* Replies */}
-            {comment.replies && comment.replies.length > 0 && (
-              <div className="mt-3">
-                {comment.replies.map(reply => 
-                  renderComment(reply, true, comment.id)
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <>
@@ -339,7 +415,7 @@ const CommentSection = ({
           </div>
         ) : comments.length > 0 ? (
           <div className="space-y-4">
-            {comments.map(comment => renderComment(comment))}
+            {renderedComments}
           </div>
         ) : (
           <div className="text-center py-8">
@@ -392,4 +468,10 @@ const CommentSection = ({
   );
 };
 
-export default CommentSection;
+export default memo(CommentSection, (prevProps, nextProps) => {
+  return (
+    prevProps.postId === nextProps.postId &&
+    prevProps.currentUser?.id === nextProps.currentUser?.id &&
+    prevProps.className === nextProps.className
+  );
+});

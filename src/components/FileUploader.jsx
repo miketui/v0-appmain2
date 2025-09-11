@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Upload, X, File, Image, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, X, File, Image, AlertCircle, CheckCircle, Shield } from 'lucide-react';
+import { api } from '../api/client';
 
 const FileUploader = ({
   onFilesSelected,
@@ -12,6 +13,7 @@ const FileUploader = ({
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
+  const [validationStatus, setValidationStatus] = useState({});
   const [errors, setErrors] = useState([]);
   const fileInputRef = useRef(null);
 
@@ -64,8 +66,24 @@ const FileUploader = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  // Server-side validation
+  const validateFileOnServer = async (file) => {
+    try {
+      setValidationStatus(prev => ({ ...prev, [file.id]: 'validating' }));
+      
+      const response = await api.upload.validate(file);
+      
+      setValidationStatus(prev => ({ ...prev, [file.id]: 'valid' }));
+      return { valid: true, threats: [] };
+    } catch (error) {
+      const threats = error.response?.data?.threats || ['Security validation failed'];
+      setValidationStatus(prev => ({ ...prev, [file.id]: 'invalid' }));
+      return { valid: false, threats };
+    }
+  };
+
   // Handle files
-  const handleFiles = useCallback((files) => {
+  const handleFiles = useCallback(async (files) => {
     const fileArray = Array.from(files);
     const newErrors = [];
     const validFiles = [];
@@ -77,22 +95,41 @@ const FileUploader = ({
       return;
     }
 
-    fileArray.forEach((file, index) => {
-      const fileErrors = validateFile(file);
-      if (fileErrors.length > 0) {
-        newErrors.push(`${file.name}: ${fileErrors.join(', ')}`);
-      } else {
-        // Add unique ID to file
-        const fileWithId = Object.assign(file, {
-          id: `${Date.now()}-${index}`,
-          preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
-        });
-        validFiles.push(fileWithId);
+    // Client-side validation first
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+      const clientErrors = validateFile(file);
+      
+      if (clientErrors.length > 0) {
+        newErrors.push(`${file.name}: ${clientErrors.join(', ')}`);
+        continue;
       }
-    });
+
+      // Add unique ID to file
+      const fileWithId = Object.assign(file, {
+        id: `${Date.now()}-${i}`,
+        preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+        validationStatus: 'pending'
+      });
+
+      // Server-side validation
+      const serverValidation = await validateFileOnServer(fileWithId);
+      
+      if (!serverValidation.valid) {
+        newErrors.push(`${file.name}: ${serverValidation.threats.join(', ')}`);
+        // Clean up preview URL
+        if (fileWithId.preview) {
+          URL.revokeObjectURL(fileWithId.preview);
+        }
+        continue;
+      }
+
+      fileWithId.validationStatus = 'valid';
+      validFiles.push(fileWithId);
+    }
 
     if (newErrors.length > 0) {
-      setErrors(newErrors);
+      setErrors(prev => [...prev, ...newErrors]);
     } else {
       setErrors([]);
     }
