@@ -1,0 +1,32 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "npm ci && npm run build",
+    "watchPatterns": [
+      "**/*.js",
+      "**/*.jsx", 
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.json"
+    ]
+  },
+  "deploy": {
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3,
+    "startCommand": "npm run preview",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300
+  },
+  "environments": {
+    "staging": {
+      "variables": {
+        "NODE_ENV": "staging",
+        "VITE_APP_ENV": "staging",
+        "VITE_APP_VERSION": "$RAILWAY_GIT_COMMIT_SHA",
+        "VITE_API_URL": "${{RAILWAY_STATIC_URL}}",
+        "VITE_APP_URL": "${{RAILWAY_STATIC_URL}}"
+      }
+    }
+  }
+}
