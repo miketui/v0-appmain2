@@ -12,11 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "@/hooks/use-auth"
 import { Loader2, Crown, Sparkles } from "lucide-react"
-import { createClient } from "@supabase/supabase-js"
-
-const supabaseUrl = "https://your-supabase-url.supabase.co"
-const supabaseKey = "your-supabase-key"
-const supabase = createClient(supabaseUrl, supabaseKey)
+import { supabase } from "@/lib/api"
 
 export default function SignInPage() {
   const [email, setEmail] = useState("")
