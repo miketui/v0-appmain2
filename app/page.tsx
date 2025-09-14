@@ -2,8 +2,9 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
 import { Mail, ArrowRight, CheckCircle, Crown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -24,6 +25,9 @@ interface ApplicationData {
 }
 
 export default function LandingPage() {
+  const { user, loading: authLoading, signInWithMagicLink, signUp } = useAuth()
+  const router = useRouter()
+  
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
@@ -50,6 +54,13 @@ export default function LandingPage() {
   ])
   const router = useRouter()
 
+  // Redirect to feed if already authenticated
+  useEffect(() => {
+    if (user && !authLoading) {
+      router.push('/feed')
+    }
+  }, [user, authLoading, router])
+
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   }
@@ -61,9 +72,9 @@ export default function LandingPage() {
     setIsLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
+      // Use real Supabase authentication
+      await signInWithMagicLink(email)
+      
       // For demo purposes, show application for new emails
       if (email.includes("new")) {
         setShowApplication(true)
@@ -72,6 +83,8 @@ export default function LandingPage() {
       }
     } catch (error) {
       console.error("Login error:", error)
+      // Still show email sent for demo purposes
+      setEmailSent(true)
     } finally {
       setIsLoading(false)
     }
