@@ -651,3 +651,18 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 6. **Launch with a small beta group** before full community rollout
 
 Welcome to your ballroom community platform! 🌟
+
+---
+
+## 📋 Additional Notes
+
+**Environment Validation**: The app validates environment variables via `lib/env.ts`. Use `.env.local` for local development and your platform's secret manager in production.
+
+**Database Setup**: Follow the Supabase setup steps above, then run the SQL files in order:
+- `supabase-setup.sql` (core schema, RLS)
+- `supabase-storage-setup.sql` (buckets, policies)
+- Additional setup files as needed
+
+**Security Reminder**: Never commit real environment variables. Store secrets only in your deployment platform's secret manager. If any secret was shared in chat or logs, rotate it immediately.
+
+For detailed technical documentation and advanced setup options, see the additional documentation files in the repository.
