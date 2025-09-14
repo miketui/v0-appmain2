@@ -23,19 +23,19 @@ export default function AuthCallbackPage() {
         if (data.session) {
           // Get user profile to determine redirect
           const { data: profile } = await supabase
-            .from("profiles")
-            .select("role, status")
+            .from("user_profiles")
+            .select("role")
             .eq("id", data.session.user.id)
             .single()
 
           setStatus("success")
           setMessage("Successfully signed in! Redirecting...")
 
-          // Redirect based on user status and role
+          // Redirect based on user role
           setTimeout(() => {
-            if ((profile as any)?.status === "pending") {
+            if ((profile as any)?.role === "APPLICANT") {
               router.push("/auth/pending")
-            } else if ((profile as any)?.role === "admin") {
+            } else if ((profile as any)?.role === "ADMIN") {
               router.push("/admin")
             } else {
               router.push("/feed")

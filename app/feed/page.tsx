@@ -8,7 +8,7 @@ import { FeedFilters } from "@/components/feed/feed-filters"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { MessageCircle, Loader2 } from "lucide-react"
-import { apiClient } from "@/lib/api"
+import { apiClient, supabase } from "@/lib/api"
 
 interface Post {
   id: string
@@ -45,14 +45,95 @@ export default function FeedPage() {
   const loadPosts = async () => {
     try {
       setLoading(true)
-      const response = (await apiClient.getPosts(1, 20)) as any
-      setPosts(response?.posts || [])
+      
+      // For now, create some demo data if no posts exist
+      const { data: postsData, error } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          author:user_profiles!posts_author_id_fkey(display_name, avatar_url, house:houses(name)),
+          post_likes(user_id)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (error) {
+        console.error('Error fetching posts:', error)
+        // Create demo data for now
+        setPosts(createDemoPosts())
+        return
+      }
+
+      const formattedPosts = postsData?.map(post => ({
+        id: post.id,
+        content: post.content,
+        author: {
+          id: post.author_id,
+          display_name: post.author?.display_name || 'Community Member',
+          avatar_url: post.author?.avatar_url,
+          house: post.author?.house
+        },
+        likes_count: post.likes_count,
+        comments_count: post.comments_count,
+        visibility: post.visibility?.toLowerCase(),
+        media_urls: post.media_urls,
+        created_at: post.created_at,
+        user_liked: post.post_likes?.some(like => like.user_id === user?.id)
+      })) || []
+
+      setPosts(formattedPosts.length > 0 ? formattedPosts : createDemoPosts())
     } catch (error) {
       console.error("Error loading posts:", error)
+      setPosts(createDemoPosts())
     } finally {
       setLoading(false)
     }
   }
+
+  const createDemoPosts = (): Post[] => [
+    {
+      id: "demo-1",
+      content: "Just had the most incredible night at the ball! The energy was unmatched and the performances were absolutely fierce! 👑✨ #BallroomLife #Fierce",
+      author: {
+        id: "demo-user-1",
+        display_name: "Kai Vogue",
+        house: { name: "House of Eleganza" }
+      },
+      likes_count: 24,
+      comments_count: 8,
+      visibility: "public",
+      created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      user_liked: false
+    },
+    {
+      id: "demo-2", 
+      content: "Practice session tomorrow at 7pm! Working on our new choreo for the upcoming competition. All house members welcome! 💃🏽",
+      author: {
+        id: "demo-user-2",
+        display_name: "Phoenix Storm",
+        house: { name: "House of Avant-Garde" }
+      },
+      likes_count: 15,
+      comments_count: 4,
+      visibility: "house_only",
+      created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+      user_liked: true
+    },
+    {
+      id: "demo-3",
+      content: "Reminder: Community guidelines emphasize respect and support for all members. Let's keep lifting each other up! 🌈❤️",
+      author: {
+        id: "demo-user-3",
+        display_name: "Alex Royalty",
+        house: { name: "House of Butch Realness" }
+      },
+      likes_count: 42,
+      comments_count: 12,
+      visibility: "public",
+      created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      user_liked: false
+    }
+  ]
 
   const handlePostCreated = (newPost: Post) => {
     setPosts((prev) => [newPost, ...prev])
