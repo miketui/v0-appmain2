@@ -1,0 +1,33 @@
+# Backend API Dockerfile for Haus of Basquiat
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+RUN apk add --no-cache curl
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy backend source
+COPY backend/ ./backend/
+COPY lib/ ./lib/
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+USER nextjs
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/api/health || exit 1
+
+# Start the backend server
+CMD ["node", "backend/index.js"]
