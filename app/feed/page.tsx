@@ -45,8 +45,8 @@ export default function FeedPage() {
   const loadPosts = async () => {
     try {
       setLoading(true)
-      const response = await apiClient.getPosts(1, 20)
-      setPosts(response.posts || [])
+      const response = (await apiClient.getPosts(1, 20)) as any
+      setPosts(response?.posts || [])
     } catch (error) {
       console.error("Error loading posts:", error)
     } finally {

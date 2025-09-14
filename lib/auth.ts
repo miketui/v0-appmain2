@@ -73,7 +73,7 @@ export class AuthService {
     if (!user) return null
 
     // Get additional profile data from user_profiles table
-    const { data: profile } = await supabase
+    const { data: profile }: { data: any } = await supabase
       .from("user_profiles")
       .select(`
         *,
@@ -105,7 +105,7 @@ export class AuthService {
     } = await supabase.auth.getUser()
     if (!user) throw new Error("Not authenticated")
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("user_profiles")
       .update({
         ...updates,

@@ -100,9 +100,9 @@ export default function LandingPage() {
       setApplicationData((prev) => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof ApplicationData],
+          ...(prev[parent as keyof ApplicationData] as unknown as Record<string, unknown>),
           [child]: value,
-        },
+        } as any,
       }))
     } else {
       setApplicationData((prev) => ({

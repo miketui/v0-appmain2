@@ -29,23 +29,27 @@ export const usePermissions = () => {
 
     const role = userProfile.role;
     const status = userProfile.status;
+    // Cache expensive/side-effectful checks
+    const isAdminVal = isAdmin();
+    const isLeaderOrAboveVal = isLeaderOrAdmin();
+    const isMemberOrAboveVal = isMemberOrAbove();
 
     return {
       // Document permissions
-      canViewDocs: isMemberOrAbove() && status === 'active',
-      canUploadDocs: isAdmin(),
+      canViewDocs: isMemberOrAboveVal && status === 'active',
+      canUploadDocs: isAdminVal,
       
       // Communication permissions
-      canChat: isMemberOrAbove() && status === 'active',
-      canPost: isMemberOrAbove() && status === 'active',
+      canChat: isMemberOrAboveVal && status === 'active',
+      canPost: isMemberOrAboveVal && status === 'active',
       
       // Moderation permissions
-      canModerate: isLeaderOrAdmin() && status === 'active',
+      canModerate: isLeaderOrAboveVal && status === 'active',
       
       // Admin permissions
-      canManageUsers: isAdmin(),
-      canManageHouses: isAdmin(),
-      canViewAnalytics: isAdmin(),
+      canManageUsers: isAdminVal,
+      canManageHouses: isAdminVal,
+      canViewAnalytics: isAdminVal,
       
       // Role checks
       isApplicant: role === 'Applicant',
@@ -58,7 +62,7 @@ export const usePermissions = () => {
       isActive: status === 'active',
       isBanned: status === 'banned'
     };
-  }, [userProfile, hasRole, isAdmin, isLeaderOrAdmin, isMemberOrAbove]);
+  }, [userProfile?.role, userProfile?.status, hasRole, isAdmin, isLeaderOrAdmin, isMemberOrAbove]);
 
   return permissions;
 };

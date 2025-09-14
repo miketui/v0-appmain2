@@ -1,3 +1,4 @@
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -179,14 +180,14 @@ describe('Permission-Based UI Rendering', () => {
       renderWithRouter(
         <Routes>
           <Route 
-            path="/" 
+            path="/admin" 
             element={
               <ProtectedRoute roles={['Admin']}>
                 <ProtectedContent />
               </ProtectedRoute>
             } 
           />
-          <Route path="/dashboard" element={<div data-testid="dashboard">Dashboard</div>} />
+          <Route path="/" element={<div data-testid="home">Home</div>} />
         </Routes>,
         '/admin'
       );

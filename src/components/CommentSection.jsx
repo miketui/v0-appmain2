@@ -379,6 +379,7 @@ const CommentSection = ({
   return (
     <>
       <div className={`${className}`}>
+        <h2 className="text-lg font-semibold mb-2" role="heading" aria-level={2}>Comments</h2>
         {/* Add comment form */}
         <div className="mb-4">
           <div className="flex items-start space-x-3">
@@ -388,6 +389,7 @@ const CommentSection = ({
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Write a comment..."
+                aria-label="Write a comment"
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 rows={3}
               />

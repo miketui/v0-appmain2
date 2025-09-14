@@ -40,8 +40,9 @@ export function NewChatModal({ isOpen, onClose, onThreadCreated, currentUser }: 
   const loadUsers = async () => {
     try {
       setLoading(true)
-      const response = await apiClient.getUsers(1, 50)
-      setUsers(response.users.filter((user: UserProfile) => user.id !== currentUser.id))
+      const response = (await apiClient.getUsers("")) as any
+      const list = (response?.users || []) as UserProfile[]
+      setUsers(list.filter((user: UserProfile) => user.id !== currentUser.id))
     } catch (error) {
       console.error("Error loading users:", error)
     } finally {
