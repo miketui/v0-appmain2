@@ -259,6 +259,8 @@ const SearchBar = ({
         </div>
         <input
           type="text"
+          role="searchbox"
+          aria-label="Search"
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}

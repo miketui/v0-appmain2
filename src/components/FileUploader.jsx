@@ -212,7 +212,7 @@ const FileUploader = ({
           {file.preview ? (
             <img
               src={file.preview}
-              alt={file.name}
+              alt="preview"
               className="w-12 h-12 rounded-md object-cover"
             />
           ) : (
@@ -222,12 +222,15 @@ const FileUploader = ({
           )}
           
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-medium text-gray-900 truncate" title={file.name}>
               {file.name}
             </p>
             <p className="text-xs text-gray-500">
               {formatFileSize(file.size)} • {typeInfo.label}
             </p>
+            {file.validationStatus === 'validating' && (
+              <p className="text-xs text-gray-500">validating</p>
+            )}
             
             {progress !== undefined && (
               <div className="mt-2">
@@ -255,12 +258,12 @@ const FileUploader = ({
   };
 
   return (
-    <div className={`w-full ${className}`}>
+    <div className={`w-full ${className}`} data-testid="file-uploader">
       {/* Upload Area */}
       <div
         className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
           dragActive 
-            ? 'border-purple-400 bg-purple-50' 
+            ? 'border-purple-500 bg-purple-50' 
             : 'border-gray-300 hover:border-gray-400'
         }`}
         onDragEnter={handleDrag}
@@ -269,6 +272,7 @@ const FileUploader = ({
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
         role="button"
+        aria-label="File dropzone"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -284,7 +288,7 @@ const FileUploader = ({
           multiple={multiple}
           onChange={handleInputChange}
           className="hidden"
-          aria-label="File upload"
+          aria-label="Drag and drop files here"
         />
         
         <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -305,7 +309,7 @@ const FileUploader = ({
 
       {/* Error Messages */}
       {errors.length > 0 && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md" data-testid="upload-errors">
           <div className="flex items-start">
             <AlertCircle className="w-5 h-5 text-red-400 mt-0.5" />
             <div className="ml-3">

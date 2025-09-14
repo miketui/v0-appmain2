@@ -19,12 +19,15 @@ interface ChatThread {
     house?: { name: string }
   }>
   last_message?: {
+    id: string
     content: string
+    sender_id: string
     message_type: "text" | "image" | "file"
     created_at: string
   }
   last_message_at: string
   unread_count: number
+  created_at: string
 }
 
 interface ChatSidebarProps {

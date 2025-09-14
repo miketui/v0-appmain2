@@ -9,6 +9,7 @@ const INITIAL_RETRY_DELAY = 1000; // 1 second
 
 // Rate limiting for toast notifications
 let lastToastTime = 0;
+const lastToastTimeByMessage = new Map();
 const isTestEnv = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE === 'test');
 const TOAST_THROTTLE_MS = isTestEnv ? 2 : 3000; // very short in tests
 
@@ -69,8 +70,10 @@ const getRetryDelay = (retryCount) => {
 // Throttled toast to prevent spam
 const throttledToast = (message, type = 'error') => {
   const now = Date.now();
-  if (now - lastToastTime > TOAST_THROTTLE_MS) {
+  const lastForMessage = lastToastTimeByMessage.get(message) || 0;
+  if (now - lastForMessage > TOAST_THROTTLE_MS) {
     lastToastTime = now;
+    lastToastTimeByMessage.set(message, now);
     if (type === 'error') {
       toast.error(message);
     } else {

@@ -30,13 +30,13 @@ export function PostComposer({ user, onPostCreated, onCancel }: PostComposerProp
 
     setPosting(true)
     try {
-      const response = await apiClient.createPost({
+      const response = (await apiClient.createPost({
         content: content.trim(),
         visibility,
         house_id: user.profile?.house_id,
-      })
+      })) as any
 
-      onPostCreated(response.post)
+      onPostCreated(response?.post)
       setContent("")
     } catch (error) {
       console.error("Error creating post:", error)

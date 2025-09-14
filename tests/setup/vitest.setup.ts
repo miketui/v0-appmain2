@@ -45,3 +45,11 @@ vi.mock('axios', () => {
 afterEach(() => {
   cleanup()
 })
+
+// Define basic theme CSS variables expected by a11y tests
+if (typeof document !== 'undefined') {
+  const root = document.documentElement as HTMLElement
+  root.style.setProperty('--color-primary', '#7c3aed')
+  root.style.setProperty('--color-text', '#111827')
+  root.style.setProperty('--color-background', '#ffffff')
+}

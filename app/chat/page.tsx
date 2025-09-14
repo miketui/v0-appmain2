@@ -64,8 +64,8 @@ export default function ChatPage() {
   const loadThreads = async () => {
     try {
       setLoading(true)
-      const response = await apiClient.getThreads() as any
-      setThreads(response.threads || [])
+      const response = (await apiClient.getThreads()) as any
+      setThreads(response?.threads || [])
     } catch (error) {
       console.error("Error loading threads:", error)
     } finally {
@@ -76,8 +76,8 @@ export default function ChatPage() {
   const loadMessages = async (threadId: string) => {
     try {
       setMessagesLoading(true)
-      const response = await apiClient.getMessages(threadId)
-      setMessages(response.messages || [])
+      const response = (await apiClient.getMessages(threadId)) as any
+      setMessages(response?.messages || [])
     } catch (error) {
       console.error("Error loading messages:", error)
     } finally {
@@ -94,8 +94,8 @@ export default function ChatPage() {
     if (!selectedThread || !user) return
 
     try {
-      const response = await apiClient.sendMessage(selectedThread.id, content, attachments)
-      const newMessage = response.message
+      const response = (await apiClient.sendMessage(selectedThread.id, content)) as any
+      const newMessage = response?.message
 
       // Add message to local state
       setMessages((prev) => [...prev, newMessage])
