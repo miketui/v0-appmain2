@@ -3,16 +3,13 @@
 import type React from "react"
 
 import { useState, useEffect, createContext, useContext } from "react"
-import { authService, type User } from "@/lib/auth"
-
-interface AuthContextType {
-  user: User | null
-  loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, userData: any) => Promise<void>
-  signOut: () => Promise<void>
-  updateProfile: (updates: any) => Promise<void>
-}
+import { authService } from "@/lib/auth"
+import type { 
+  User, 
+  AuthContextType, 
+  UserSignUpData, 
+  ProfileUpdateData 
+} from "@/types/auth"
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -46,10 +43,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signUp = async (email: string, password: string, userData: any) => {
+  const signUp = async (email: string, password: string, userData: UserSignUpData) => {
     setLoading(true)
     try {
       await authService.signUp(email, password, userData)
+    } catch (error) {
+      console.error('Sign up failed:', error)
+      throw error
     } finally {
       setLoading(false)
     }
@@ -60,15 +60,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await authService.signOut()
       setUser(null)
+    } catch (error) {
+      console.error('Sign out failed:', error)
+      throw error
     } finally {
       setLoading(false)
     }
   }
 
-  const updateProfile = async (updates: any) => {
-    if (!user) return
-    const updatedProfile = await authService.updateProfile(updates)
-    setUser({ ...user, profile: updatedProfile })
+  const updateProfile = async (updates: ProfileUpdateData) => {
+    if (!user) {
+      throw new Error('No user logged in')
+    }
+    
+    try {
+      const updatedProfile = await authService.updateProfile(updates)
+      setUser({ ...user, profile: updatedProfile })
+    } catch (error) {
+      console.error('Profile update failed:', error)
+      throw error
+    }
   }
 
   return (

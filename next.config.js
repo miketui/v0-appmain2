@@ -23,12 +23,8 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
   },
 
-  // Environment variables validation
-  env: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  },
+  // Environment variables with NEXT_PUBLIC_ prefix are automatically available
+  // No need to explicitly expose them in the env config
 
   // Security headers
   async headers() {
@@ -80,14 +76,6 @@ const nextConfig = {
         net: false,
         tls: false,
       }
-    }
-    
-    // Bundle analyzer (development only)
-    if (process.env.ANALYZE === 'true') {
-      const withBundleAnalyzer = require('@next/bundle-analyzer')({
-        enabled: process.env.ANALYZE === 'true',
-      })
-      return withBundleAnalyzer(config)
     }
     
     return config
