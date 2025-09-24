@@ -52,7 +52,6 @@ export default function LandingPage() {
     { id: "4", name: "House of Femme" },
     { id: "5", name: "House of Bizarre" },
   ])
-  const router = useRouter()
 
   // Redirect to feed if already authenticated
   useEffect(() => {
