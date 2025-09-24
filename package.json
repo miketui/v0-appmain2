@@ -17,7 +17,7 @@
     "test:staging": "NODE_ENV=staging vitest run",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
-    "e2e:staging": "PLAYWRIGHT_BASE_URL=https://hausofbasquiat-staging.railway.app playwright test",
+    "e2e:staging": "PLAYWRIGHT_BASE_URL=https://your-staging-domain.com playwright test",
     "deploy:staging": "./scripts/deploy-staging.sh",
     "deploy:staging:railway": "./scripts/deploy-staging.sh railway",
     "deploy:staging:vercel": "./scripts/deploy-staging.sh vercel",
@@ -26,7 +26,7 @@
     "staging:check": "npm run test && npm run lint && npm run type-check && npm audit --audit-level=high",
     "staging:build": "npm run staging:check && npm run build:staging",
     "staging:deploy": "npm run staging:build && npm run deploy:staging:railway",
-    "health:staging": "curl -f https://hausofbasquiat-staging.railway.app/health",
+    "health:staging": "curl -f https://your-staging-domain.com/health",
     "logs:staging": "railway logs --service staging",
     "lighthouse:staging": "lighthouse-ci --config=.lighthouserc.json"
   },

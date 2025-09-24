@@ -1,9 +1,11 @@
-# 🎭 Haus of Basquiat - Ballroom Community Platform
+# 🎭 Ballroom Community Portal
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/nns-projects-a973bdbb/v0-appmain2)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/i6d51JDopAO)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com)
+[![Built with Next.js](https://img.shields.io/badge/Built%20with-Next.js-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 
 A sophisticated social platform designed for the ballroom and voguing community, featuring elegant design, real-time interactions, and comprehensive community management tools.
+
+> **Note**: This is an open-source template for building ballroom community platforms. You can customize it for your own community or contribute to make it better for everyone.
 
 ---
 
@@ -17,8 +19,8 @@ A sophisticated social platform designed for the ballroom and voguing community,
 
 ### 1. Clone & Install
 ```bash
-git clone https://github.com/miketui/v0-appmain2.git
-cd v0-appmain2
+git clone https://github.com/your-username/ballroom-community-portal.git
+cd ballroom-community-portal
 npm install
 # or
 pnpm install
@@ -31,8 +33,8 @@ Create `.env.local` file in the root directory with the following variables:
 #### 🔴 **REQUIRED** - Core Application
 ```bash
 # Database & Authentication
-DATABASE_URL="postgresql://username:password@localhost:5432/hausofbasquiat"
-DIRECT_URL="postgresql://username:password@localhost:5432/hausofbasquiat"
+DATABASE_URL="postgresql://username:password@localhost:5432/your_database_name"
+DIRECT_URL="postgresql://username:password@localhost:5432/your_database_name"
 
 # Supabase (Required for auth, database, storage)
 NEXT_PUBLIC_SUPABASE_URL="https://your-project-id.supabase.co"
@@ -52,7 +54,7 @@ NODE_ENV="development"
 ```bash
 # Email Service (for notifications)
 SENDGRID_API_KEY="SG.your-sendgrid-api-key"
-SENDGRID_FROM_EMAIL="noreply@hausofbasquiat.com"
+SENDGRID_FROM_EMAIL="noreply@yourdomain.com"
 
 # Redis (for sessions, caching, rate limiting)
 UPSTASH_REDIS_REST_URL="https://your-redis-url.upstash.io"
@@ -97,8 +99,8 @@ SOCKET_IO_SECRET="your-socket-io-secret"
 #### Option 2: Local PostgreSQL
 ```bash
 # Install PostgreSQL locally
-createdb hausofbasquiat
-psql hausofbasquiat < database/schema.sql
+createdb your_database_name
+psql your_database_name < database/schema.sql
 ```
 
 ### 4. Development Server
@@ -128,7 +130,7 @@ RATE_LIMIT_REQUESTS_PER_MINUTE="100"
 RATE_LIMIT_BURST="200"
 
 # Admin configuration
-ADMIN_EMAILS="admin@hausofbasquiat.com,founder@example.com"
+ADMIN_EMAILS="admin@yourdomain.com,founder@example.com"
 SUPER_ADMIN_KEY="your-super-admin-setup-key"
 
 # Community settings
@@ -139,7 +141,7 @@ COMMUNITY_NAME="Haus of Basquiat"
 # Security headers
 ENABLE_CSP="true"
 ENABLE_HSTS="true"
-COOKIE_DOMAIN=".hausofbasquiat.com"  # for production
+COOKIE_DOMAIN=".yourdomain.com"  # for production
 
 # Logging and monitoring
 LOG_LEVEL="info"
@@ -179,7 +181,7 @@ NODE_ENV="production"
 
 #### Step 4: Custom Domain (Optional)
 1. In Vercel dashboard → Settings → Domains
-2. Add your custom domain: `hausofbasquiat.com`
+2. Add your custom domain: `yourdomain.com`
 3. Update DNS records as instructed
 4. Update environment variables:
    ```bash
@@ -651,6 +653,44 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 6. **Launch with a small beta group** before full community rollout
 
 Welcome to your ballroom community platform! 🌟
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community! This project is built for and by the ballroom and voguing community.
+
+### How to Contribute
+- 🐛 **Report bugs** by opening an issue
+- 💡 **Suggest features** that would benefit the community
+- 🔧 **Submit pull requests** with improvements
+- 📖 **Improve documentation** to help others
+- 🎨 **Enhance design** with accessibility in mind
+- 🌍 **Add translations** for global communities
+
+### Getting Started
+1. Read our [Contributing Guidelines](CONTRIBUTING.md)
+2. Check out [open issues](../../issues) 
+3. Fork the repository and make your changes
+4. Submit a pull request with a clear description
+
+### Community Guidelines
+- **Inclusive**: Welcome contributors of all backgrounds and skill levels
+- **Respectful**: Honor the culture and history of ballroom and voguing
+- **Collaborative**: Work together to build something amazing
+- **Safe**: Prioritize the safety of LGBTQ+ community members
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### Open Source Notice
+This platform is open source to benefit the entire ballroom community. You can:
+- ✅ Use it for your own community
+- ✅ Modify it to fit your needs  
+- ✅ Contribute improvements back
+- ✅ Learn from the codebase
+- ❌ Use it for commercial purposes without attribution
 
 ---
 

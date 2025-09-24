@@ -13,21 +13,21 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: {
-    default: "Haus of Basquiat Portal",
-    template: "%s | Haus of Basquiat"
+    default: "Ballroom Community Portal",
+    template: "%s | Community Portal"
   },
   description: "Members-only social platform for the ballroom and voguing community featuring role-based access control, real-time messaging, media galleries, event management, and community features.",
   generator: "Next.js",
-  applicationName: "Haus of Basquiat Portal",
-  authors: [{ name: "Terragon Labs" }],
-  creator: "Terragon Labs",
-  publisher: "Haus of Basquiat",
+  applicationName: "Ballroom Community Portal",
+  authors: [{ name: "Community" }],
+  creator: "Community",
+  publisher: "Ballroom Community",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://hausofbasquiat.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000'),
   alternates: {
     canonical: '/',
   },
@@ -35,15 +35,15 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    siteName: 'Haus of Basquiat Portal',
-    title: 'Haus of Basquiat Portal',
+    siteName: 'Ballroom Community Portal',
+    title: 'Ballroom Community Portal',
     description: 'Members-only social platform for the ballroom and voguing community',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Haus of Basquiat Portal',
+        alt: 'Ballroom Community Portal',
       },
     ],
   },

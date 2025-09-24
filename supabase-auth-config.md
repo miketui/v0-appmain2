@@ -257,7 +257,7 @@ For reliable email delivery:
 5. **SMTP Username**: `apikey`
 6. **SMTP Password**: Your SendGrid API key
 7. **SMTP Sender Name**: `Haus of Basquiat`
-8. **SMTP Sender Email**: `noreply@hausofbasquiat.com`
+8. **SMTP Sender Email**: `noreply@yourdomain.com`
 
 ## Step 5: JWT Configuration
 

@@ -286,7 +286,7 @@ COPYLEAKS_API_KEY="your-copyleaks-key"
 
 # Email
 SENDGRID_API_KEY="SG...."
-SENDGRID_FROM_EMAIL="noreply@hausofbasquiat.com"
+SENDGRID_FROM_EMAIL="noreply@yourdomain.com"
 
 # Analytics
 GOOGLE_ANALYTICS_ID="G-..."
