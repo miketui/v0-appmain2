@@ -64,7 +64,7 @@ export default function FeedPage() {
         return
       }
 
-      const formattedPosts = postsData?.map(post => ({
+      const formattedPosts = (postsData as any)?.map((post: any) => ({
         id: post.id,
         content: post.content,
         author: {
@@ -78,7 +78,7 @@ export default function FeedPage() {
         visibility: post.visibility?.toLowerCase(),
         media_urls: post.media_urls,
         created_at: post.created_at,
-        user_liked: post.post_likes?.some(like => like.user_id === user?.id)
+        user_liked: post.post_likes?.some((like: any) => like.user_id === user?.id)
       })) || []
 
       setPosts(formattedPosts.length > 0 ? formattedPosts : createDemoPosts())
