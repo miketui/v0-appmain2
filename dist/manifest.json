@@ -126,7 +126,7 @@
   ],
   "protocol_handlers": [
     {
-      "protocol": "web+hausofbasquiat",
+      "protocol": "web+ballroom-community",
       "url": "/?action=%s"
     }
   ],

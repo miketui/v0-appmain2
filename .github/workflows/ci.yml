@@ -106,7 +106,7 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          NEXT_PUBLIC_APP_URL: https://hausofbasquiat.com
+          NEXT_PUBLIC_APP_URL: https://yourdomain.com
           NODE_ENV: production
 
       - name: Upload build artifacts
@@ -209,7 +209,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     environment:
       name: staging
-      url: https://hausofbasquiat-staging.railway.app
+      url: https://your-staging-domain.com
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -218,7 +218,7 @@ jobs:
         uses: railway-app/railway@v1
         with:
           token: ${{ secrets.RAILWAY_TOKEN }}
-          service: hausofbasquiat-staging
+          service: your-staging-service
         env:
           RAILWAY_ENVIRONMENT: staging
 
@@ -227,7 +227,7 @@ jobs:
 
       - name: Health check staging deployment
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://hausofbasquiat-staging.railway.app/api/health)
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://your-staging-domain.com/api/health)
           if [ $response != "200" ]; then
             echo "Health check failed with status: $response"
             exit 1
@@ -241,7 +241,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     environment:
       name: production
-      url: https://hausofbasquiat.com
+      url: https://yourdomain.com
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -257,7 +257,7 @@ jobs:
       - name: Health check production deployment
         run: |
           sleep 30
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://hausofbasquiat.com/api/health)
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://yourdomain.com/api/health)
           if [ $response != "200" ]; then
             echo "Production health check failed with status: $response"
             exit 1
@@ -269,7 +269,7 @@ jobs:
         if: success()
         with:
           status: success
-          text: '🎉 Production deployment successful! https://hausofbasquiat.com'
+          text: '🎉 Production deployment successful! https://yourdomain.com'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 

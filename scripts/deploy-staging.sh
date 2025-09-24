@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Staging Deployment Script for Haus of Basquiat Portal
+# Staging Deployment Script for Ballroom Community Portal
 # Usage: ./scripts/deploy-staging.sh [platform]
 # Platforms: railway, vercel, docker, local
 
@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 # Configuration
 PLATFORM=${1:-railway}
 STAGING_BRANCH="staging"
-HEALTH_CHECK_URL="https://hausofbasquiat-staging.railway.app/health"
+HEALTH_CHECK_URL="https://your-staging-domain.com/health"
 MAX_WAIT_TIME=300 # 5 minutes
 
 echo -e "${BLUE}🚀 Starting staging deployment...${NC}"
@@ -92,7 +92,7 @@ case $PLATFORM in
         railway link
         railway up --service staging
         
-        HEALTH_CHECK_URL="https://hausofbasquiat-staging.railway.app/health"
+        HEALTH_CHECK_URL="https://your-staging-domain.com/health"
         ;;
         
     "vercel")
@@ -108,7 +108,7 @@ case $PLATFORM in
         # Deploy to Vercel
         vercel --prod --yes --config vercel.staging.json
         
-        HEALTH_CHECK_URL="https://hausofbasquiat-staging.vercel.app/health"
+        HEALTH_CHECK_URL="https://your-staging-domain.com/health"
         ;;
         
     "docker")

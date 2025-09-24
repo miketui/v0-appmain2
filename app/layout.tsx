@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     title: 'Haus of Basquiat Portal',
     description: 'Members-only social platform for the ballroom and voguing community',
     images: ['/og-image.png'],
-    creator: '@hausofbasquiat',
+    creator: '@ballroom-community',
   },
   manifest: '/manifest.json',
   appleWebApp: {

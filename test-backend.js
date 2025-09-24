@@ -163,7 +163,7 @@ async function runTests() {
         .from('user_profiles')
         .insert({
           id: testUserId,
-          email: 'test@hausofbasquiat.com',
+          email: 'test@example.com',
           display_name: 'Test User',
           role: 'Member'
         });
@@ -228,13 +228,13 @@ async function runTests() {
       await supabase.from('user_profiles').insert([
         {
           id: testUserId,
-          email: 'trigger-test@hausofbasquiat.com',
+          email: 'trigger-test@example.com',
           display_name: 'Trigger Test',
           role: 'Member'
         },
         {
           id: testLikerId,
-          email: 'liker@hausofbasquiat.com',
+          email: 'liker@example.com',
           display_name: 'Test Liker', 
           role: 'Member'
         }

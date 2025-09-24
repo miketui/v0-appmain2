@@ -84,7 +84,7 @@ export default function AdminDashboard() {
     {
       id: 'user_1',
       displayName: 'Miss Tina',
-      email: 'tina@hausofbasquiat.com',
+      email: 'tina@example.com',
       role: 'MEMBER',
       houseName: 'House of Revlon',
       status: 'active',
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
     {
       id: 'user_2',
       displayName: 'Pepper LaBeija',
-      email: 'pepper@hausofbasquiat.com',
+      email: 'pepper@example.com',
       role: 'LEADER',
       houseName: 'House of LaBeija',
       status: 'active',

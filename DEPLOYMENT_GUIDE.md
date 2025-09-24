@@ -1,4 +1,4 @@
-# 🚀 Complete Deployment Guide - Haus of Basquiat Portal
+# 🚀 Complete Deployment Guide - Ballroom Community Portal
 
 This guide will take you from zero to a fully deployed, production-ready ballroom community platform.
 
@@ -16,7 +16,7 @@ This guide will take you from zero to a fully deployed, production-ready ballroo
 
 1. Go to [supabase.com](https://supabase.com) and sign in
 2. Click **"New Project"**
-3. **Project Name**: `haus-of-basquiat-portal`
+3. **Project Name**: `ballroom-community-portal` (or your preferred name)
 4. **Database Password**: Generate strong password (save it!)
 5. **Region**: Choose closest to your users
 6. Click **"Create new project"** (takes ~2 minutes)
@@ -141,7 +141,7 @@ From **Settings > API**, copy:
 
 3. **Verify Domain**:
    - Go to **Settings > Sender Authentication**
-   - Verify your domain (`hausofbasquiat.com`)
+   - Verify your domain (`yourdomain.com`)
    - Add DNS records as instructed
 
 4. **Configure Supabase SMTP**:
@@ -151,7 +151,7 @@ From **Settings > API**, copy:
    - **Port**: `587`
    - **Username**: `apikey`
    - **Password**: Your SendGrid API key
-   - **Sender**: `noreply@hausofbasquiat.com`
+   - **Sender**: `noreply@yourdomain.com`
 
 5. **Test Email Delivery**:
    - Try signing up with a test email

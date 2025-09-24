@@ -9,6 +9,8 @@
 # Testing
 /coverage
 *.lcov
+/tests/reports
+/tests/screenshots
 
 # Next.js
 /.next/
@@ -32,6 +34,7 @@ yarn-error.log*
 .env*.local
 .env.production
 .env.staging
+.env
 
 # Vercel
 .vercel
@@ -88,3 +91,17 @@ public/uploads/
 *.backup
 *.bak
 *~
+
+# Docker
+docker-compose.override.yml
+
+# Secrets and keys
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Runtime and cache
+.serverless/
+.webpack/
+.parcel-cache

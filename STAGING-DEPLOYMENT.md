@@ -125,7 +125,7 @@ OPENAI_API_KEY=your_staging_key
 # Start PostgreSQL with Docker
 docker run -d \
   --name postgres-staging \
-  -e POSTGRES_DB=hausofbasquiat_staging \
+  -e POSTGRES_DB=community_staging \
   -e POSTGRES_USER=staging_user \
   -e POSTGRES_PASSWORD=staging_password \
   -p 5433:5432 \
@@ -201,10 +201,10 @@ npm audit --audit-level=high  # Security audit
 
 ```bash
 # Health check
-curl https://hausofbasquiat-staging.railway.app/health
+curl https://your-staging-domain.com/health
 
 # API validation
-curl https://hausofbasquiat-staging.railway.app/api/health
+curl https://your-staging-domain.com/api/health
 
 # Database connectivity
 npm run db:check:staging
@@ -214,7 +214,7 @@ npm run db:check:staging
 
 ```bash
 # Run E2E tests against staging
-PLAYWRIGHT_BASE_URL=https://hausofbasquiat-staging.railway.app npm run e2e
+PLAYWRIGHT_BASE_URL=https://your-staging-domain.com npm run e2e
 
 # Run specific test suites
 npm run e2e:auth
@@ -462,9 +462,9 @@ vercel promote --scope staging
 - [Supabase Docs](https://supabase.com/docs)
 
 ### Team Contacts
-- **DevOps:** devops@hausofbasquiat.com
-- **Backend:** backend@hausofbasquiat.com
-- **Frontend:** frontend@hausofbasquiat.com
+- **DevOps:** devops@yourdomain.com
+- **Backend:** backend@yourdomain.com
+- **Frontend:** frontend@yourdomain.com
 
 ### Emergency Procedures
 1. Check health endpoints

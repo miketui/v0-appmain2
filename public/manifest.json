@@ -1,6 +1,6 @@
 {
-  "name": "Haus of Basquiat Portal",
-  "short_name": "Haus of Basquiat",
+  "name": "Ballroom Community Portal",
+  "short_name": "Community Portal",
   "description": "Members-only social platform for the ballroom and voguing community",
   "start_url": "/",
   "display": "standalone",
@@ -126,7 +126,7 @@
   ],
   "protocol_handlers": [
     {
-      "protocol": "web+hausofbasquiat",
+      "protocol": "web+ballroom-community",
       "url": "/?action=%s"
     }
   ],

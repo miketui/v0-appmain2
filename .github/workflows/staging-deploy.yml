@@ -108,7 +108,7 @@ jobs:
     if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
     environment:
       name: staging
-      url: https://hausofbasquiat-staging.railway.app
+      url: https://your-staging-domain.com
       
     steps:
       - name: Checkout code
@@ -130,11 +130,11 @@ jobs:
         run: |
           echo "Waiting for deployment to be ready..."
           sleep 30
-          curl -f https://hausofbasquiat-staging.railway.app/health || exit 1
+          curl -f https://your-staging-domain.com/health || exit 1
           
       - name: Run E2E tests on staging
         env:
-          PLAYWRIGHT_BASE_URL: https://hausofbasquiat-staging.railway.app
+          PLAYWRIGHT_BASE_URL: https://your-staging-domain.com
         run: |
           npx playwright install
           npm run e2e
@@ -158,9 +158,9 @@ jobs:
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
-            https://hausofbasquiat-staging.railway.app
-            https://hausofbasquiat-staging.railway.app/login
-            https://hausofbasquiat-staging.railway.app/dashboard
+            https://your-staging-domain.com
+            https://your-staging-domain.com/login
+            https://your-staging-domain.com/dashboard
           configPath: './.lighthouserc.json'
           uploadArtifacts: true
           temporaryPublicStorage: true
