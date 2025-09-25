@@ -72,9 +72,9 @@ export async function middleware(request: NextRequest) {
 
   if (isAdminRoute && user) {
     // Check if user has admin role
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+    const { data: profile } = await supabase.from("user_profiles").select("role").eq("id", user.id).single()
 
-    if (profile?.role !== "admin") {
+    if (profile?.role !== "Admin") {
       return NextResponse.redirect(new URL("/feed", request.url))
     }
   }

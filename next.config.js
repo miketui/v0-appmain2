@@ -4,9 +4,9 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@supabase/auth-helpers-nextjs', '@supabase/supabase-js']
   },
 
-  // Temporarily disable TypeScript checks for faster deployment
+  // Enable strict TypeScript checking for production
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   
   // Image optimization
