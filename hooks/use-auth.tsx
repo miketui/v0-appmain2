@@ -43,6 +43,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const signInWithMagicLink = async (email: string) => {
+    setLoading(true)
+    try {
+      await authService.signInWithMagicLink(email)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const signUp = async (email: string, password: string, userData: UserSignUpData) => {
     setLoading(true)
     try {
@@ -88,6 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         loading,
         signIn,
+        signInWithMagicLink: signInWithMagicLink,
         signUp,
         signOut,
         updateProfile,

@@ -238,7 +238,7 @@ export function createMetricsMiddleware() {
         tags: {
           method: request.method,
           path: request.nextUrl.pathname,
-          status_code: statusCode?.toString()
+          status_code: statusCode?.toString() || 'unknown'
         }
       })
 
@@ -285,7 +285,7 @@ export function trackPageView(pageName: string, userId?: string): void {
     unit: 'count',
     tags: {
       page: pageName,
-      user_id: userId
+      user_id: userId || 'anonymous'
     }
   })
 }
@@ -298,7 +298,7 @@ export function trackUserAction(action: string, userId?: string, context?: Recor
     unit: 'count',
     tags: {
       action,
-      user_id: userId,
+      user_id: userId || 'anonymous',
       ...context
     }
   })
@@ -323,7 +323,7 @@ export function trackSecurityEvent(
   monitoring.trackSecurityEvent({
     type,
     ip: request.ip || request.headers.get('x-forwarded-for') || 'unknown',
-    userAgent: request.headers.get('user-agent'),
+    userAgent: request.headers.get('user-agent') || 'unknown',
     context
   })
 }

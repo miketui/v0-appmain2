@@ -4,13 +4,22 @@ import { apiClient } from "./api"
 export interface User {
   id: string
   email: string
-  role: "applicant" | "member" | "leader" | "admin"
+  role: "APPLICANT" | "MEMBER" | "LEADER" | "ADMIN"
+  token?: string
   profile?: {
+    id: string
+    userId: string
+    displayName: string
+    bio?: string
+    avatar?: string
+    role: "APPLICANT" | "MEMBER" | "LEADER" | "ADMIN"
+    houseName?: string
+    createdAt: string
+    updatedAt: string
     display_name?: string
     avatar_url?: string
     house_id?: string
     house_name?: string
-    bio?: string
     pronouns?: string
     ballroom_experience?: string
     social_links?: any
@@ -85,13 +94,21 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email!,
-      role: profile?.role?.toLowerCase() || "applicant",
+      role: profile?.role?.toUpperCase() || "APPLICANT",
       profile: profile ? {
+        id: profile.id,
+        userId: user.id,
+        displayName: profile.display_name || "",
+        bio: profile.bio,
+        avatar: profile.avatar_url,
+        role: profile?.role?.toUpperCase() || "APPLICANT",
+        houseName: profile.house?.name,
+        createdAt: profile.created_at || new Date().toISOString(),
+        updatedAt: profile.updated_at || new Date().toISOString(),
         display_name: profile.display_name,
         avatar_url: profile.avatar_url,
         house_id: profile.house_id,
         house_name: profile.house?.name,
-        bio: profile.bio,
         pronouns: profile.pronouns,
         ballroom_experience: profile.ballroom_experience,
         social_links: profile.social_links,

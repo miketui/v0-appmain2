@@ -192,7 +192,7 @@ export default function FeedPage() {
             Community Feed
           </h1>
           <p className="text-gray-300">
-            Welcome back, {user.profile?.display_name || user.email}! Share your journey with the Haus.
+            Welcome back, {user.profile?.displayName || user.profile?.display_name || user.email}! Share your journey with the Haus.
           </p>
         </div>
 
@@ -201,7 +201,7 @@ export default function FeedPage() {
           currentFilter={feedFilter}
           onFilterChange={setFeedFilter}
           onCreatePost={() => setShowComposer(true)}
-          userHouse={user.profile?.house_id}
+          userHouse={user.profile?.house_id || user.profile?.houseName}
         />
 
         {/* Post Composer */}

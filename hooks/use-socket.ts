@@ -12,6 +12,10 @@ interface Message {
   type: 'text' | 'image' | 'file'
   replyToId?: string
   createdAt: string
+  readBy?: Array<{
+    userId: string
+    readAt: string
+  }>
   sender?: {
     id: string
     displayName: string
