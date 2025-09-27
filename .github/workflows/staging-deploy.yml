@@ -11,6 +11,15 @@ env:
   NODE_VERSION: '18'
   STAGING_BRANCH: staging
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  checks: write
+  deployments: write
+  pull-requests: write
+  packages: read
+
 jobs:
   test:
     name: Run Tests
