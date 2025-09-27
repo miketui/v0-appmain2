@@ -151,8 +151,7 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-copilot/fix-a3c9edc5-2ab5-4ac3-964a-a7e5cab228e1
-          base: main
+          base: ${{ github.event.repository.default_branch }}
           head: HEAD
           extra_args: --debug --only-verified
 
@@ -169,8 +168,3 @@ copilot/fix-a3c9edc5-2ab5-4ac3-964a-a7e5cab228e1
           echo "- ESLint Security: ${{ needs.eslint-security.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Security Tests: ${{ needs.security-tests.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Secrets Scan: ${{ needs.secrets-scan.result }}" >> $GITHUB_STEP_SUMMARY
-
-          base: ${{ github.event.before }}
-          head: ${{ github.sha }}
-          extra_args: --debug --only-verified
- main

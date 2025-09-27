@@ -415,9 +415,10 @@ app.get('/api/documents', authenticate, async (req, res) => {
       query = query.eq('category', category);
     }
 
-    // Apply search filter
+    // Apply search filter with sanitization
     if (search) {
-      query = query.or(`title.ilike.%${search}%,tags.cs.{${search}}`);
+      const sanitizedSearch = search.replace(/[%_\\]/g, '\\$&').substring(0, 100);
+      query = query.or(`title.ilike.%${sanitizedSearch}%,tags.cs.{${sanitizedSearch}}`);
     }
 
     // Apply role-based access control
@@ -747,11 +748,15 @@ app.get('/api/users', authenticate, async (req, res) => {
       .neq('id', req.user.id);
 
     if (search) {
-      query = query.ilike('display_name', `%${search}%`);
+      const sanitizedSearch = search.replace(/[%_\\]/g, '\\$&').substring(0, 100);
+      query = query.ilike('display_name', `%${sanitizedSearch}%`);
     }
 
     if (exclude.length > 0) {
-      query = query.not('id', 'in', `(${exclude.join(',')})`);
+      const sanitizedExclude = exclude.map(id => parseInt(id)).filter(id => !isNaN(id));
+      if (sanitizedExclude.length > 0) {
+        query = query.not('id', 'in', `(${sanitizedExclude.join(',')})`);
+      }
     }
 
     const { data, error } = await query.limit(20);
