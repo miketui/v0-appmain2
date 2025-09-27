@@ -9,6 +9,13 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  contents: read
+  packages: write
+  deployments: write
+  actions: read
+  pull-requests: write
+
 jobs:
   docker-build:
     runs-on: ubuntu-latest
