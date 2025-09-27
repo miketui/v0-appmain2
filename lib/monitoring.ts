@@ -83,7 +83,7 @@ class MonitoringService {
       this.sendToExternalService('error', errorWithTimestamp)
     }
 
-    console.error(`[ERROR] ${error.level.toUpperCase()}: ${error.message}`, error.context)
+    console.error('[ERROR] %s: %s', error.level.toUpperCase(), error.message, error.context)
   }
 
   // Track security events
