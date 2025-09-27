@@ -102,9 +102,13 @@ describe('Security Tests', () => {
       ]
 
       const sanitizeDisplayName = (input: string): string => {
-        // Basic sanitization - remove HTML tags and dangerous characters
+        // Improved: Remove HTML tags in a loop (handles multi-layer/multi-character tags)
+        let prev: string
+        do {
+          prev = input
+          input = input.replace(/<[^>]*>/g, '')
+        } while (input !== prev)
         return input
-          .replace(/<[^>]*>/g, '') // Remove HTML tags
           .replace(/(javascript:|data:|vbscript:)/gi, '') // Remove dangerous protocols
           .replace(/on\w+\s*=/gi, '') // Remove event handlers
           .trim()
