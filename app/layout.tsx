@@ -5,11 +5,11 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Providers } from "@/components/providers/auth-provider"
-import { Inter } from "next/font/google"
+// import { Inter } from "next/font/google"
 import { Suspense } from "react"
 import { PWAInitializer } from "@/components/pwa-initializer"
 
-const inter = Inter({ subsets: ["latin"] })
+// const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: {
@@ -80,7 +80,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#dc2626" />
       </head>
-      <body className={`${inter.className} font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <PWAInitializer />
         <Suspense fallback={<div>Loading...</div>}>
           <Providers>{children}</Providers>
