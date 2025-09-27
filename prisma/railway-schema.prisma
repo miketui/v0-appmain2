@@ -1,0 +1,430 @@
+// Railway PostgreSQL Schema - Alternative to Supabase
+// This replaces your Supabase database with Railway's PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Railway automatically provides this
+}
+
+// ============================================================================
+// AUTHENTICATION & USERS
+// ============================================================================
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  hashedPassword  String?   // For email/password auth
+  emailVerified   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  profile         Profile?
+  posts           Post[]
+  comments        Comment[]
+  likes           Like[]
+  media           Media[]
+  sentMessages    Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageRecipient")
+  notifications   Notification[]
+  followers       Follow[] @relation("UserFollowing")
+  following       Follow[] @relation("UserFollower")
+  bookmarks       Bookmark[]
+  houseMembers    HouseMember[]
+  eventRSVPs      EventRSVP[]
+
+  @@map("users")
+}
+
+model Profile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  displayName   String
+  bio           String?
+  avatarUrl     String?
+  coverImageUrl String?
+  pronouns      String?
+  location      String?
+  website       String?
+  instagramHandle String?
+  tiktokHandle    String?
+  visibility    Visibility @default(PUBLIC)
+  status        MemberStatus @default(PENDING)
+  houseId       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  house         House?  @relation(fields: [houseId], references: [id])
+
+  @@map("profiles")
+}
+
+// ============================================================================
+// HOUSES & COMMUNITY STRUCTURE
+// ============================================================================
+
+model House {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  description   String?
+  imageUrl      String?
+  coverImageUrl String?
+  foundedYear   Int?
+  location      String?
+  website       String?
+  instagramHandle String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  members       HouseMember[]
+  profiles      Profile[]
+  posts         Post[]
+  events        Event[]
+  media         Media[]
+
+  @@map("houses")
+}
+
+model HouseMember {
+  id        String    @id @default(cuid())
+  userId    String
+  houseId   String
+  role      HouseRole @default(MEMBER)
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime?
+  isActive  Boolean   @default(true)
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  house     House     @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  profile   Profile?  @relation(fields: [userId], references: [userId])
+
+  @@unique([userId, houseId])
+  @@map("house_members")
+}
+
+// ============================================================================
+// CONTENT & POSTS
+// ============================================================================
+
+model Post {
+  id          String     @id @default(cuid())
+  title       String
+  content     String
+  imageUrl    String?
+  videoUrl    String?
+  category    PostCategory @default(GENERAL)
+  visibility  Visibility @default(PUBLIC)
+  status      PostStatus @default(DRAFT)
+  authorId    String
+  houseId     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  publishedAt DateTime?
+
+  // Relations
+  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  house       House?     @relation(fields: [houseId], references: [id])
+  comments    Comment[]
+  likes       Like[]
+  bookmarks   Bookmark[]
+  media       Media[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  postId    String
+  authorId  String
+  parentId  String?  // For nested comments
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  likes     Like[]
+
+  @@map("comments")
+}
+
+model Like {
+  id        String    @id @default(cuid())
+  userId    String
+  postId    String?
+  commentId String?
+  createdAt DateTime  @default(now())
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment   Comment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+  @@map("likes")
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("bookmarks")
+}
+
+// ============================================================================
+// MEDIA & GALLERY
+// ============================================================================
+
+model Media {
+  id          String      @id @default(cuid())
+  fileName    String
+  originalName String
+  mimeType    String
+  fileSize    Int
+  url         String
+  thumbnailUrl String?
+  description String?
+  category    MediaCategory @default(GENERAL)
+  visibility  Visibility  @default(PUBLIC)
+  userId      String
+  postId      String?
+  houseId     String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post        Post?       @relation(fields: [postId], references: [id])
+  house       House?      @relation(fields: [houseId], references: [id])
+
+  @@map("media")
+}
+
+// ============================================================================
+// MESSAGING
+// ============================================================================
+
+model Message {
+  id           String      @id @default(cuid())
+  content      String
+  senderId     String
+  recipientId  String?     // For direct messages
+  houseId      String?     // For house group messages
+  conversationId String?   // For grouped conversations
+  messageType  MessageType @default(TEXT)
+  imageUrl     String?
+  fileUrl      String?
+  isRead       Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relations
+  sender       User        @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient    User?       @relation("MessageRecipient", fields: [recipientId], references: [id])
+
+  @@map("messages")
+}
+
+// ============================================================================
+// EVENTS & ACTIVITIES
+// ============================================================================
+
+model Event {
+  id            String      @id @default(cuid())
+  title         String
+  description   String?
+  location      String?
+  virtualLink   String?
+  startDate     DateTime
+  endDate       DateTime?
+  imageUrl      String?
+  category      EventCategory @default(WORKSHOP)
+  visibility    Visibility  @default(PUBLIC)
+  status        EventStatus @default(DRAFT)
+  maxAttendees  Int?
+  price         Float?      @default(0)
+  houseId       String?
+  organizerId   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  house         House?      @relation(fields: [houseId], references: [id])
+  organizer     User        @relation(fields: [organizerId], references: [id])
+  rsvps         EventRSVP[]
+
+  @@map("events")
+}
+
+model EventRSVP {
+  id        String     @id @default(cuid())
+  eventId   String
+  userId    String
+  status    RSVPStatus @default(INTERESTED)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  event     Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@map("event_rsvps")
+}
+
+// ============================================================================
+// SOCIAL FEATURES
+// ============================================================================
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  follower    User     @relation("UserFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?            // Additional data for the notification
+  read      Boolean          @default(false)
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum MemberStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum HouseRole {
+  MEMBER
+  ELDER
+  LEADER
+  FOUNDER
+}
+
+enum PostCategory {
+  GENERAL
+  PERFORMANCE
+  FASHION
+  RUNWAY
+  BALLROOM_CULTURE
+  TUTORIAL
+  ANNOUNCEMENT
+  BATTLE
+  WORKSHOP
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  DELETED
+}
+
+enum Visibility {
+  PUBLIC
+  HOUSE_ONLY
+  PRIVATE
+}
+
+enum MediaCategory {
+  GENERAL
+  PERFORMANCE
+  FASHION
+  RUNWAY
+  PROFILE
+  HOUSE
+  EVENT
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+}
+
+enum EventCategory {
+  WORKSHOP
+  BALL
+  BATTLE
+  SOCIAL
+  FUNDRAISER
+  PERFORMANCE
+  MEETING
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum RSVPStatus {
+  INTERESTED
+  GOING
+  NOT_GOING
+  MAYBE
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+  MESSAGE
+  HOUSE_INVITE
+  EVENT_INVITE
+  MENTION
+  SYSTEM
+}
+
+// ============================================================================
+// INDEXES FOR PERFORMANCE
+// ============================================================================
+
+// These indexes will be created automatically by Prisma
+// Additional custom indexes can be added as needed
