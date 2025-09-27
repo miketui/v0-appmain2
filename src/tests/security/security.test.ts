@@ -102,15 +102,19 @@ describe('Security Tests', () => {
       ]
 
       const sanitizeDisplayName = (input: string): string => {
-        // Improved: Remove HTML tags in a loop (handles multi-layer/multi-character tags)
+        // Improved: Remove HTML tags and event handlers in a loop (handles multi-layer/multi-character tags)
         let prev: string
         do {
           prev = input
           input = input.replace(/<[^>]*>/g, '')
+          // Remove dangerous protocols
+          input = input.replace(/(javascript:|data:|vbscript:)/gi, '')
+          // Remove event handler attributes ("on..." with optional "=")
+          input = input.replace(/on\w+\s*=?/gi, '')
         } while (input !== prev)
+        // Remove any stray "onerror", "onclick", etc. again (in case of non-attribute locations)
+        input = input.replace(/on\w+/gi, '')
         return input
-          .replace(/(javascript:|data:|vbscript:)/gi, '') // Remove dangerous protocols
-          .replace(/on\w+\s*=/gi, '') // Remove event handlers
           .trim()
           .substring(0, 50) // Limit length
       }
