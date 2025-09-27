@@ -3,11 +3,20 @@ import '@testing-library/jest-dom'
 // Global test setup
 import { vi } from 'vitest'
 
-// Mock environment variables
+// Only set NEXT_PUBLIC_ variables for client-side tests
+// NEVER expose sensitive server-side variables in client tests
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://localhost:54321'
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
-process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test'
-process.env.JWT_SECRET = 'test-jwt-secret'
+process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
+
+// Explicitly clear sensitive variables to ensure they're not accessible in client
+delete process.env.DATABASE_URL
+delete process.env.JWT_SECRET
+delete process.env.STRIPE_SECRET_KEY
+delete process.env.SUPABASE_SERVICE_ROLE_KEY
+delete process.env.SENDGRID_API_KEY
+delete process.env.ANTHROPIC_API_KEY
+delete process.env.OPENAI_API_KEY
 
 // Mock Next.js router
 vi.mock('next/navigation', () => ({
