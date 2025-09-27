@@ -1,4 +1,17 @@
 import { describe, it, expect } from 'vitest'
+import {
+  validateEmail,
+  validatePassword,
+  sanitizeInput,
+  sanitizeDisplayName,
+  validateHouseName,
+  validateFileUpload,
+  checkRateLimit,
+  detectHarmfulContent,
+  validateJWTStructure,
+  generateSecureRandom,
+  validateOrigin
+} from '@/lib/security'
 
 describe('Security Tests', () => {
   describe('Environment Variables', () => {
@@ -53,14 +66,12 @@ describe('Security Tests', () => {
         ''
       ]
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
       validEmails.forEach(email => {
-        expect(emailRegex.test(email)).toBe(true)
+        expect(validateEmail(email)).toBe(true)
       })
 
       invalidEmails.forEach(email => {
-        expect(emailRegex.test(email)).toBe(false)
+        expect(validateEmail(email)).toBe(false)
       })
     })
 
@@ -80,15 +91,16 @@ describe('Security Tests', () => {
         'P@ss1' // too short
       ]
 
-      // Password requirements: min 8 chars, uppercase, lowercase, number, special char
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-
       strongPasswords.forEach(password => {
-        expect(passwordRegex.test(password)).toBe(true)
+        const result = validatePassword(password)
+        expect(result.isValid).toBe(true)
+        expect(result.strength).toMatch(/medium|strong/)
       })
 
       weakPasswords.forEach(password => {
-        expect(passwordRegex.test(password)).toBe(false)
+        const result = validatePassword(password)
+        expect(result.isValid).toBe(false)
+        expect(result.errors.length).toBeGreaterThan(0)
       })
     })
 
@@ -101,24 +113,6 @@ describe('Security Tests', () => {
         'user<iframe></iframe>name'
       ]
 
-      const sanitizeDisplayName = (input: string): string => {
-        // Improved: Remove HTML tags and event handlers in a loop (handles multi-layer/multi-character tags)
-        let prev: string
-        do {
-          prev = input
-          input = input.replace(/<[^>]*>/g, '')
-          // Remove dangerous protocols
-          input = input.replace(/(javascript:|data:|vbscript:)/gi, '')
-          // Remove event handler attributes ("on..." with optional "=")
-          input = input.replace(/on\w+\s*=?/gi, '')
-        } while (input !== prev)
-        // Remove any stray "onerror", "onclick", etc. again (in case of non-attribute locations)
-        input = input.replace(/on\w+/gi, '')
-        return input
-          .trim()
-          .substring(0, 50) // Limit length
-      }
-
       maliciousInputs.forEach(input => {
         const sanitized = sanitizeDisplayName(input)
         expect(sanitized).not.toContain('<')
@@ -126,45 +120,65 @@ describe('Security Tests', () => {
         expect(sanitized).not.toContain('javascript:')
         expect(sanitized).not.toContain('onerror')
         expect(sanitized).not.toContain('onclick')
+        expect(sanitized).not.toContain('script')
+        expect(sanitized).not.toContain('iframe')
+      })
+    })
+
+    it('should sanitize general input', () => {
+      const testCases = [
+        {
+          input: '<script>alert("xss")</script>',
+          expectNotToContain: '<script>',
+          shouldBeEmpty: true
+        },
+        {
+          input: 'Normal text with <b>bold</b> tags',
+          expectNotToContain: '<b>',
+          shouldBeEmpty: false
+        },
+        {
+          input: 'Plain text without HTML',
+          expectNotToContain: '<',
+          shouldBeEmpty: false
+        }
+      ]
+
+      testCases.forEach(({ input, expectNotToContain, shouldBeEmpty }) => {
+        const sanitized = sanitizeInput(input)
+        expect(sanitized).not.toContain(expectNotToContain)
+        
+        if (shouldBeEmpty) {
+          expect(sanitized).toBe('')
+        } else {
+          expect(sanitized.length).toBeGreaterThan(0)
+        }
       })
     })
   })
 
   describe('API Security', () => {
-    it('should implement rate limiting headers', async () => {
-      // Mock response with rate limiting headers
-      const mockResponse = {
-        headers: {
-          'x-ratelimit-limit': '100',
-          'x-ratelimit-remaining': '99',
-          'x-ratelimit-reset': '1640995200'
-        }
+    it('should implement rate limiting', () => {
+      const identifier = 'test-user'
+      
+      // First request should be allowed
+      let result = checkRateLimit(identifier, 5, 60000)
+      expect(result.allowed).toBe(true)
+      expect(result.remaining).toBe(4)
+      
+      // Make more requests
+      for (let i = 0; i < 4; i++) {
+        result = checkRateLimit(identifier, 5, 60000)
+        expect(result.allowed).toBe(true)
       }
-
-      expect(mockResponse.headers['x-ratelimit-limit']).toBeDefined()
-      expect(mockResponse.headers['x-ratelimit-remaining']).toBeDefined()
-      expect(mockResponse.headers['x-ratelimit-reset']).toBeDefined()
-    })
-
-    it('should require authentication for protected endpoints', async () => {
-      const protectedEndpoints = [
-        '/api/admin/users',
-        '/api/admin/reports',
-        '/api/admin/moderate',
-        '/api/posts',
-        '/api/gallery/upload',
-        '/api/messages'
-      ]
-
-      // In a real test, we would make actual requests without auth tokens
-      protectedEndpoints.forEach(endpoint => {
-        expect(endpoint.startsWith('/api/')).toBe(true)
-      })
+      
+      // Sixth request should be blocked
+      result = checkRateLimit(identifier, 5, 60000)
+      expect(result.allowed).toBe(false)
+      expect(result.remaining).toBe(0)
     })
 
     it('should validate JWT token structure', () => {
-      const validJWTPattern = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/
-      
       const validTokens = [
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
       ]
@@ -177,12 +191,21 @@ describe('Security Tests', () => {
       ]
 
       validTokens.forEach(token => {
-        expect(validJWTPattern.test(token)).toBe(true)
+        expect(validateJWTStructure(token)).toBe(true)
       })
 
       invalidTokens.forEach(token => {
-        expect(validJWTPattern.test(token)).toBe(false)
+        expect(validateJWTStructure(token)).toBe(false)
       })
+    })
+
+    it('should validate origins', () => {
+      const allowedOrigins = ['https://hausofbasquiat.com', 'http://localhost:3000']
+
+      expect(validateOrigin('https://hausofbasquiat.com', allowedOrigins)).toBe(true)
+      expect(validateOrigin('http://localhost:3000', allowedOrigins)).toBe(true)
+      expect(validateOrigin('https://malicious.com', allowedOrigins)).toBe(false)
+      expect(validateOrigin(null, allowedOrigins)).toBe(false)
     })
   })
 
@@ -199,50 +222,68 @@ describe('Security Tests', () => {
         'audio/wav'
       ]
 
-      const dangerousMimeTypes = [
-        'application/javascript',
-        'text/html',
-        'application/x-executable',
-        'application/x-msdownload',
-        'text/x-script.phyton'
-      ]
+      // Mock File objects
+      allowedMimeTypes.forEach(mimeType => {
+        const mockFile = {
+          type: mimeType,
+          size: 1024 * 1024, // 1MB
+          name: `test.${mimeType.split('/')[1]}`
+        } as File
 
-      const isAllowedFileType = (mimeType: string): boolean => {
-        return allowedMimeTypes.includes(mimeType)
-      }
-
-      allowedMimeTypes.forEach(type => {
-        expect(isAllowedFileType(type)).toBe(true)
+        const result = validateFileUpload(mockFile)
+        expect(result.isValid).toBe(true)
       })
 
-      dangerousMimeTypes.forEach(type => {
-        expect(isAllowedFileType(type)).toBe(false)
-      })
+      const dangerousFile = {
+        type: 'application/javascript',
+        size: 1024,
+        name: 'malicious.js'
+      } as File
+
+      const result = validateFileUpload(dangerousFile)
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toContain('File type not allowed')
     })
 
     it('should enforce file size limits', () => {
-      const maxFileSizes = {
-        image: 10 * 1024 * 1024, // 10MB
-        video: 100 * 1024 * 1024, // 100MB
-        audio: 50 * 1024 * 1024   // 50MB
-      }
+      // Test valid file sizes
+      const validImageFile = {
+        type: 'image/jpeg',
+        size: 5 * 1024 * 1024, // 5MB
+        name: 'image.jpg'
+      } as File
 
-      const validateFileSize = (size: number, type: string): boolean => {
-        if (type.startsWith('image/')) return size <= maxFileSizes.image
-        if (type.startsWith('video/')) return size <= maxFileSizes.video
-        if (type.startsWith('audio/')) return size <= maxFileSizes.audio
-        return false
-      }
+      const validVideoFile = {
+        type: 'video/mp4',
+        size: 50 * 1024 * 1024, // 50MB
+        name: 'video.mp4'
+      } as File
 
-      // Valid file sizes
-      expect(validateFileSize(5 * 1024 * 1024, 'image/jpeg')).toBe(true)
-      expect(validateFileSize(50 * 1024 * 1024, 'video/mp4')).toBe(true)
-      expect(validateFileSize(25 * 1024 * 1024, 'audio/mp3')).toBe(true)
+      expect(validateFileUpload(validImageFile).isValid).toBe(true)
+      expect(validateFileUpload(validVideoFile).isValid).toBe(true)
 
-      // Invalid file sizes
-      expect(validateFileSize(15 * 1024 * 1024, 'image/jpeg')).toBe(false)
-      expect(validateFileSize(150 * 1024 * 1024, 'video/mp4')).toBe(false)
-      expect(validateFileSize(75 * 1024 * 1024, 'audio/mp3')).toBe(false)
+      // Test invalid file sizes
+      const oversizedImageFile = {
+        type: 'image/jpeg',
+        size: 15 * 1024 * 1024, // 15MB (over 10MB limit)
+        name: 'large.jpg'
+      } as File
+
+      const result = validateFileUpload(oversizedImageFile)
+      expect(result.isValid).toBe(false)
+      expect(result.errors.some(error => error.includes('File size exceeds limit'))).toBe(true)
+    })
+
+    it('should detect suspicious file names', () => {
+      const suspiciousFile = {
+        type: 'image/jpeg',
+        size: 1024 * 1024,
+        name: 'image.jpg.exe'
+      } as File
+
+      const result = validateFileUpload(suspiciousFile)
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toContain('Suspicious file name detected')
     })
   })
 
@@ -253,25 +294,14 @@ describe('Security Tests', () => {
         'Download this suspicious file.exe',
         'Content with personal info: SSN 123-45-6789',
         'Click here for free money!!!',
-        'Hate speech and harassment content'
+        'This contains malware'
       ]
 
-      const detectHarmfulContent = (content: string): boolean => {
-        const harmfulPatterns = [
-          /http:\/\/[^\s]+\.exe/i,
-          /\b\d{3}-\d{2}-\d{4}\b/, // SSN pattern
-          /free money|get rich quick/i,
-          /malware|virus|trojan/i
-        ]
-
-        return harmfulPatterns.some(pattern => pattern.test(content))
-      }
-
       harmfulContent.forEach(content => {
-        const isHarmful = detectHarmfulContent(content)
-        // At least one should be detected as harmful
+        const result = detectHarmfulContent(content)
         if (content.includes('malware') || content.includes('SSN') || content.includes('free money')) {
-          expect(isHarmful).toBe(true)
+          expect(result.isHarmful).toBe(true)
+          expect(result.reasons.length).toBeGreaterThan(0)
         }
       })
     })
@@ -292,14 +322,6 @@ describe('Security Tests', () => {
         'Inappropriate offensive name'
       ]
 
-      const validateHouseName = (name: string): boolean => {
-        if (!name || name.trim().length < 5) return false
-        if (name.length > 50) return false
-        if (/<[^>]*>/.test(name)) return false // HTML tags
-        if (/script/i.test(name)) return false // Script injection
-        return true
-      }
-
       appropriateNames.forEach(name => {
         expect(validateHouseName(name)).toBe(true)
       })
@@ -307,6 +329,44 @@ describe('Security Tests', () => {
       inappropriateNames.forEach(name => {
         expect(validateHouseName(name)).toBe(false)
       })
+    })
+
+    it('should detect safe content', () => {
+      const safeContent = [
+        'Welcome to the ballroom community!',
+        'House of LaBeija presents: Voguing Workshop',
+        'Join us for a fierce competition tonight!'
+      ]
+
+      safeContent.forEach(content => {
+        const result = detectHarmfulContent(content)
+        expect(result.isHarmful).toBe(false)
+        expect(result.reasons.length).toBe(0)
+      })
+    })
+  })
+
+  describe('Utility Functions', () => {
+    it('should generate secure random strings', () => {
+      const random1 = generateSecureRandom(32)
+      const random2 = generateSecureRandom(32)
+
+      expect(random1).toHaveLength(32)
+      expect(random2).toHaveLength(32)
+      expect(random1).not.toBe(random2)
+      expect(/^[A-Za-z0-9]+$/.test(random1)).toBe(true)
+    })
+
+    it('should handle edge cases gracefully', () => {
+      // Test with null/undefined inputs
+      expect(validateEmail('')).toBe(false)
+      expect(sanitizeDisplayName('')).toBe('')
+      expect(validateHouseName('')).toBe(false)
+      
+      // Test with extremely long inputs
+      const longString = 'a'.repeat(10000)
+      const sanitized = sanitizeInput(longString)
+      expect(sanitized.length).toBeLessThanOrEqual(1000)
     })
   })
 })
