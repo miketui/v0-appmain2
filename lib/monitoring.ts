@@ -83,7 +83,7 @@ class MonitoringService {
       this.sendToExternalService('error', errorWithTimestamp)
     }
 
-    console.error(`[ERROR] ${error.level.toUpperCase()}: ${error.message}`, error.context)
+    console.error('[ERROR] %s: %s', error.level.toUpperCase(), error.message, error.context)
   }
 
   // Track security events
@@ -105,7 +105,7 @@ class MonitoringService {
       this.sendToExternalService('security', eventWithTimestamp)
     }
 
-    console.warn(`[SECURITY] ${event.type}: IP ${event.ip}`, event.context)
+    console.warn('[SECURITY] %s: IP %s', event.type, event.ip, event.context)
   }
 
   // Get recent metrics
