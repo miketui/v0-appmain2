@@ -125,7 +125,7 @@ export function sanitizeDisplayName(input: string): string {
     // Remove dangerous protocols
     sanitized = sanitized.replace(/(javascript:|data:|vbscript:|about:|file:)/gi, '')
     // Remove event handlers
-    sanitized = sanitized.replace(/on\w+\s*=?\s*[^>\s]*/gi, '')
+    sanitized = sanitized.replace(/on\w+/gi, '')
     // Remove HTML entities that could be used for XSS
     sanitized = sanitized.replace(/&[#\w]+;/gi, '')
   } while (sanitized !== prev)
