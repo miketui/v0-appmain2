@@ -14,7 +14,9 @@ const nextConfig = {
       'localhost',
       'via.placeholder.com',
       // Add your Supabase storage domain
-      process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '').replace('.supabase.co', '.supabase.co') || ''
+      process.env.NEXT_PUBLIC_SUPABASE_URL
+        ? process.env.NEXT_PUBLIC_SUPABASE_URL.replace(/^https?:\/\//, '').split('/')[0]
+        : ''
     ].filter(Boolean),
     formats: ['image/webp', 'image/avif'],
   },
