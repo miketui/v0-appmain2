@@ -10,17 +10,32 @@ import { checkRateLimit, securityHeaders, validateOrigin } from './security'
 const csrfTokens = new Map<string, { token: string; expires: number }>()
 
 /**
- * Generate CSRF token
+ * Generate CSRF token using cryptographically secure random generation
  */
 export function generateCSRFToken(sessionId: string): string {
-  const token = Math.random().toString(36).substring(2, 15) + 
-                Math.random().toString(36).substring(2, 15)
-  
+  // Use Web Crypto API for cryptographically secure random generation
+  const buffer = new Uint8Array(32)
+  if (typeof window !== 'undefined' && window.crypto) {
+    window.crypto.getRandomValues(buffer)
+  } else {
+    // Node.js environment
+    const crypto = require('crypto')
+    const randomBytes = crypto.randomBytes(32)
+    buffer.set(randomBytes)
+  }
+
+  // Convert to base64url (URL-safe base64)
+  const token = Buffer.from(buffer)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '')
+
   csrfTokens.set(sessionId, {
     token,
     expires: Date.now() + (60 * 60 * 1000) // 1 hour
   })
-  
+
   return token
 }
 

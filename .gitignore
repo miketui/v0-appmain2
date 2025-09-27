@@ -29,6 +29,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # Local env files (keep .env.example)
+.env
 .env*.local
 .env.production
 .env.staging

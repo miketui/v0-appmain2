@@ -50,7 +50,17 @@ export function validateEmail(email: string): boolean {
 }
 
 export function generateId(): string {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36)
+  // Use cryptographically secure random generation for IDs
+  if (typeof window !== 'undefined' && window.crypto) {
+    // Browser environment
+    const array = new Uint8Array(16)
+    window.crypto.getRandomValues(array)
+    return Array.from(array, byte => byte.toString(36)).join('') + Date.now().toString(36)
+  } else {
+    // Node.js environment
+    const crypto = require('crypto')
+    return crypto.randomBytes(16).toString('hex') + Date.now().toString(36)
+  }
 }
 
 export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
