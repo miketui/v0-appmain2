@@ -19,7 +19,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      if (user.role !== "admin") {
+      if (user.role !== "ADMIN") {
         window.location.href = "/feed"
         return
       }
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
     )
   }
 
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== "ADMIN") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-black to-gold-900">
         <Card className="w-full max-w-md bg-black/80 border-red-500/20">

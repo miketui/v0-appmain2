@@ -97,7 +97,8 @@ export default function GalleryUploadPage() {
           uploadFile.metadata = {
             ...uploadFile.metadata,
             width: img.width,
-            height: img.height
+            height: img.height,
+            size: uploadFile.file.size
           }
           setFiles(prev => [...prev])
         }
@@ -109,7 +110,8 @@ export default function GalleryUploadPage() {
             ...uploadFile.metadata,
             width: video.videoWidth,
             height: video.videoHeight,
-            duration: video.duration
+            duration: video.duration,
+            size: uploadFile.file.size
           }
           setFiles(prev => [...prev])
         }

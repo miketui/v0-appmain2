@@ -15,9 +15,9 @@ export const handlers = [
 
   // Auth endpoints
   http.post('/api/auth/signin', async ({ request }) => {
-    const body = await request.json()
-    
-    if (body.email === 'test@example.com' && body.password === 'password') {
+    const body = await request.json() as any
+
+    if (body?.email === 'test@example.com' && body?.password === 'password') {
       return HttpResponse.json({
         user: {
           id: 'user_1',
@@ -33,13 +33,13 @@ export const handlers = [
   }),
 
   http.post('/api/auth/signup', async ({ request }) => {
-    const body = await request.json()
-    
+    const body = await request.json() as any
+
     return HttpResponse.json({
       user: {
         id: 'user_new',
-        email: body.email,
-        displayName: body.displayName,
+        email: body?.email,
+        displayName: body?.displayName,
         role: 'APPLICANT',
       },
       message: 'Account created successfully',
@@ -130,12 +130,12 @@ export const handlers = [
 
   // Moderation endpoints
   http.post('/api/admin/moderate', async ({ request }) => {
-    const body = await request.json()
-    
+    const body = await request.json() as any
+
     return HttpResponse.json({
       success: true,
-      action: body.action,
-      targetId: body.targetId,
+      action: body?.action,
+      targetId: body?.targetId,
     })
   }),
 

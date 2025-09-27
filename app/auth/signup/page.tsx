@@ -80,6 +80,7 @@ export default function SignUpPage() {
 
     try {
       await signUp(formData.email, formData.password, {
+        displayName: formData.displayName,
         display_name: formData.displayName,
         pronouns: formData.pronouns,
         house_id: formData.houseId,
@@ -88,7 +89,7 @@ export default function SignUpPage() {
         categories: formData.categories,
         why_join: formData.whyJoin,
         social_media: formData.socialMedia,
-        role: "applicant",
+        role: "APPLICANT",
         status: "pending",
       })
 
