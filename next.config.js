@@ -1,28 +1,34 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ['@supabase/auth-helpers-nextjs', '@supabase/supabase-js']
+    serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs', 'jsonwebtoken']
   },
 
   // Enable strict TypeScript checking for production
   typescript: {
     ignoreBuildErrors: false,
   },
-  
-  // Image optimization
+
+  // Image optimization - Railway PostgreSQL with Cloudinary/external storage
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
+        hostname: 'res.cloudinary.com',
         port: '',
-        pathname: '/storage/v1/object/public/**',
+        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.railway.app',
+        port: '',
+        pathname: '/uploads/**',
       }
     ],
     formats: ['image/webp', 'image/avif'],
@@ -31,8 +37,7 @@ const nextConfig = {
   // Environment variables validation
   env: {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NODE_ENV: process.env.NODE_ENV,
   },
 
   // Security headers
