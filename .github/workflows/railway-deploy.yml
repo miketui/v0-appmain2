@@ -8,6 +8,13 @@ on:
 env:
   NODE_VERSION: '18'
 
+permissions:
+  contents: read
+  deployments: write
+  actions: read
+  checks: write
+  security-events: write
+
 jobs:
   test-and-deploy:
     name: Test and Deploy to Railway

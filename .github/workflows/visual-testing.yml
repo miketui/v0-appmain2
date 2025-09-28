@@ -9,6 +9,11 @@ on:
       - 'components/**'
       - 'styles/**'
 
+permissions:
+  contents: read
+  checks: write
+  actions: read
+
 jobs:
   visual-tests:
     name: Generate Screenshots

@@ -41,11 +41,15 @@ export async function GET(request: NextRequest) {
       .neq("id", user.id)
 
     if (search) {
-      query = query.ilike("display_name", `%${search}%`)
+      const sanitizedSearch = search.replace(/[%_\\]/g, '\\$&').substring(0, 100)
+      query = query.ilike("display_name", `%${sanitizedSearch}%`)
     }
 
     if (exclude.length > 0) {
-      query = query.not("id", "in", `(${exclude.join(",")})`)
+      const sanitizedExclude = exclude.map(id => parseInt(id)).filter(id => !isNaN(id))
+      if (sanitizedExclude.length > 0) {
+        query = query.not("id", "in", `(${sanitizedExclude.join(",")})`)
+      }
     }
 
     const { data: users, error } = await query.limit(20)

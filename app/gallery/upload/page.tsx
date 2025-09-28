@@ -126,11 +126,37 @@ export default function GalleryUploadPage() {
     onDrop,
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
-      'video/*': ['.mp4', '.mov', '.avi', '.mkv'],
+      'video/*': ['.mp4', '.mov', '.avi'],
       'audio/*': ['.mp3', '.wav', '.ogg']
     },
-    maxSize: 100 * 1024 * 1024, // 100MB
-    multiple: true
+    maxSize: 50 * 1024 * 1024, // 50MB (reduced from 100MB)
+    maxFiles: 10, // Limit number of files
+    multiple: true,
+    validator: (file) => {
+      // Additional security validation
+      const allowedMimeTypes = [
+        'image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp',
+        'video/mp4', 'video/quicktime', 'video/x-msvideo',
+        'audio/mpeg', 'audio/wav', 'audio/ogg'
+      ]
+
+      if (!allowedMimeTypes.includes(file.type)) {
+        return {
+          code: 'file-invalid-type',
+          message: 'File type not allowed for security reasons'
+        }
+      }
+
+      // Check for suspicious file names
+      if (/[<>:"/\\|?*]/.test(file.name) || file.name.includes('..')) {
+        return {
+          code: 'file-invalid-name',
+          message: 'Invalid file name'
+        }
+      }
+
+      return null
+    }
   })
 
   const removeFile = (fileId: string) => {
